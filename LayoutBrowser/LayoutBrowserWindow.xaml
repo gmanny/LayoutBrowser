@@ -1,0 +1,24 @@
+﻿<Window x:Class="LayoutBrowser.LayoutBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LayoutBrowser"
+        xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="LayoutBrowserWindow" Height="450" Width="800"
+        DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
+    <Window.Resources>
+        <!-- These CreationProperties use the Evergreen Edge executable that's installed on the machine. -->
+        <wpf:CoreWebView2CreationProperties x:Key="EvergreenWebView2CreationProperties" />
+    </Window.Resources>
+    <Grid>
+        <wpf:WebView2
+            x:Name="webView"
+            CreationProperties="{StaticResource EvergreenWebView2CreationProperties}"
+            Source="https://www.bing.com/"
+
+            CoreWebView2InitializationCompleted="WebView_OnCoreWebView2InitializationCompleted"
+        />
+    </Grid>
+</Window>
