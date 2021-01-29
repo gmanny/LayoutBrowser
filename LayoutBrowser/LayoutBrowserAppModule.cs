@@ -1,4 +1,5 @@
-﻿using Ninject.Modules;
+﻿using Ninject.Extensions.Factory;
+using Ninject.Modules;
 
 namespace LayoutBrowser
 {
@@ -6,12 +7,19 @@ namespace LayoutBrowser
     {
         public override void Load()
         {
+            Bind<LayoutManager>().ToSelf().InSingletonScope();
+
             // UI
             Bind<App>().ToSelf().InSingletonScope();
 
             // -> windows
+            Bind<BrowserTab>().ToSelf();
+            Bind<IBrowserTabFactory>().ToFactory();
+            Bind<BrowserTabViewModel>().ToSelf();
+            Bind<IBrowserTabViewModelFactory>().ToFactory();
+
             Bind<LayoutBrowserWindow>().ToSelf();
-            Bind<LayoutBrowserWindowViewModel>().ToSelf().InSingletonScope();
+            Bind<LayoutBrowserWindowViewModel>().ToSelf();
         }
     }
 }

@@ -6,19 +6,16 @@
         xmlns:local="clr-namespace:LayoutBrowser"
         xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
-        Title="LayoutBrowserWindow" Height="450" Width="800"
+        Title="{Binding Tab.ViewModel.Title}" Height="450" Width="800"
         DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
-    <Window.Resources>
-        <!-- These CreationProperties use the Evergreen Edge executable that's installed on the machine. -->
-        <wpf:CoreWebView2CreationProperties x:Key="EvergreenWebView2CreationProperties" />
-    </Window.Resources>
     <Grid>
-        <wpf:WebView2
-            x:Name="webView"
-            CreationProperties="{StaticResource EvergreenWebView2CreationProperties}"
-            Source="https://www.bing.com/"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
 
-            CoreWebView2InitializationCompleted="WebView_OnCoreWebView2InitializationCompleted"
-        />
+        <ComboBox Grid.Row="0" ItemsSource="{Binding Tabs}" SelectedItem="{Binding Tab, Mode=TwoWay}" DisplayMemberPath="ViewModel.Url" />
+
+        <ContentPresenter Grid.Row="1" Content="{Binding Tab}" />
     </Grid>
 </Window>
