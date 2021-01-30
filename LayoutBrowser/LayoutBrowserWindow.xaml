@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:LayoutBrowser"
         xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:utils="clr-namespace:WpfAppCommon.Utils;assembly=WpfAppCommon"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
         x:Name="wholeWindow"
         Title="{Binding CurrentTab.ViewModel.Title}"
@@ -95,7 +96,7 @@
             </Grid>
 
             <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 
-                     DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                     DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                      utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
                      Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="White"
                      HorizontalAlignment="Left">
@@ -109,6 +110,11 @@
                         </Style.Triggers>
                     </Style>
                 </ListBox.Style>
+
+                <i:Interaction.Behaviors>
+                    <utils:ScrollIntoViewForListBox />
+                </i:Interaction.Behaviors>
+
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" />
