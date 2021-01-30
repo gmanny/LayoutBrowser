@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
+using MonitorCommon;
 using MvvmHelpers;
 using WpfAppCommon;
 
@@ -128,7 +129,15 @@ namespace LayoutBrowser
         public string Title
         {
             get => title;
-            set => SetProperty(ref title, value);
+            set
+            {
+                if (value.IsNullOrEmpty())
+                {
+                    return;
+                }
+
+                SetProperty(ref title, value);
+            }
         }
 
         public double ZoomFactor

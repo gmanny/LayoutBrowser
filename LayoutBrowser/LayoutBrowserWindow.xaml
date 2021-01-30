@@ -30,17 +30,6 @@
         </Grid.Style>
 
         <Grid WindowChrome.IsHitTestVisibleInChrome="True">
-            <Grid.Style>
-                <Style TargetType="Grid">
-                    <Setter Property="Margin" Value="0" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
-                            <Setter Property="Margin" Value="0,20,0,0" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-
             <Grid.Resources>
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
@@ -54,8 +43,26 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" HorizontalAlignment="Right">
-                <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" FontSize="10" Text="{Binding CurrentTab.ViewModel.Title}" IsHitTestVisible="False" Margin="5,1,1,1">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <Button Grid.Column="1" Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -70,6 +77,7 @@
                                 </Setter.Value>
                             </Setter>
                             <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="FontSize" Value="14" />
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#e81123" />
@@ -77,6 +85,9 @@
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter Property="Background" Value="#bbe81123" />
                                 </Trigger>
+                                <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
+                                    <Setter Property="FontSize" Value="10" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
