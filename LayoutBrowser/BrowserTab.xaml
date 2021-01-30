@@ -19,7 +19,7 @@
                     Content="{Binding RefreshButtonText}" Padding="0,-2,1,0" Width="20" FontSize="16" />
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Width="20" FontSize="16" />
 
-            <TextBox Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center">
+            <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Return" Command="{Binding GoBtnCommand}" />
                 </TextBox.InputBindings>
@@ -30,6 +30,7 @@
             x:Name="webView"
             CreationProperties="{Binding CreationProperties}"
             Source="{Binding BrowserSource, Mode=TwoWay}"
+            ZoomFactor="{Binding ZoomFactor, Mode=TwoWay}"
             NavigationStarting="OnNavigationStarted"
             NavigationCompleted="OnNavigationCompleted"
         />

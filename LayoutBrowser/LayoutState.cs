@@ -6,26 +6,28 @@ namespace LayoutBrowser
 {
     public class LayoutState
     {
-        public List<LayoutWindow> windows;
+        public List<LayoutWindow> windows = new List<LayoutWindow>();
     }
 
     public class LayoutWindow
     {
-        public List<LayoutWindowTab> tabs;
+        public List<LayoutWindowTab> tabs = new List<LayoutWindowTab>();
+        public int activeTabIndex;
 
-        public WindowState windowState;
-        public double left;
-        public double top;
-        public double width;
-        public double height;
+        public WindowState windowState = WindowState.Normal;
+        public double left = 100;
+        public double top = 100;
+        public double width = 800;
+        public double height = 500;
     }
 
     public class LayoutWindowTab
     {
         public string url;
-        public string profile;
+        public string title = "New Tab";
+        public string profile = "default";
 
-        public double zoomFactor;
+        public double zoomFactor = 1;
 
         public TimeSpan? autoRefresh;
     }

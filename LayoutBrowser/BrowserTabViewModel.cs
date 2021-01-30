@@ -32,7 +32,7 @@ namespace LayoutBrowser
         private string refreshButtonText = "↻";
         private WebView2 webView;
         private string title;
-        private double? zoomFactorToRestore;
+        private double zoomFactor;
 
         public BrowserTabViewModel(LayoutWindowTab model, ILogger logger)
         {
@@ -40,7 +40,8 @@ namespace LayoutBrowser
             this.logger = logger;
 
             profile = model.profile;
-            zoomFactorToRestore = model.zoomFactor;
+            zoomFactor = model.zoomFactor;
+            title = model.title;
 
             refreshBtnCommand = new WindowCommand(ExecuteRefresh);
             goBtnCommand = new WindowCommand(ExecuteGo);
@@ -60,8 +61,9 @@ namespace LayoutBrowser
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
             url = browserSource.ToString(),
+            title = title,
             profile = profile,
-            zoomFactor = webView.ZoomFactor
+            zoomFactor = zoomFactor
         };
 
         private void ExecuteRefresh()
@@ -129,6 +131,12 @@ namespace LayoutBrowser
             set => SetProperty(ref title, value);
         }
 
+        public double ZoomFactor
+        {
+            get => zoomFactor;
+            set => SetProperty(ref zoomFactor, value);
+        }
+
         public WebView2 WebView
         {
             get => webView;
@@ -153,15 +161,9 @@ namespace LayoutBrowser
 
             Title = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
-
-            if (zoomFactorToRestore != null)
-            {
-                wv.ZoomFactor = zoomFactorToRestore.Value;
-                zoomFactorToRestore = null;
-            }
         }
 
-        private void OnTitleChanged(object? sender, object e)
+        private void OnTitleChanged(object sender, object e)
         {
             Title = webView.CoreWebView2.DocumentTitle;
         }

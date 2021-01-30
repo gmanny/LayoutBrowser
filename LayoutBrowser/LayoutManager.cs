@@ -1,6 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Monitor.ServiceCommon.Services;
+using Monitor.ServiceCommon.Util;
+using MonitorCommon;
+using Newtonsoft.Json;
 
 namespace LayoutBrowser
 {
@@ -10,46 +16,135 @@ namespace LayoutBrowser
         private readonly ILayoutBrowserWindowFactory windowFactory;
         private readonly ILogger logger;
 
-        public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, ILogger logger)
+        private readonly JsonSerializer ser;
+
+        private readonly List<WindowItem> windows = new List<WindowItem>();
+
+        private bool stopping;
+
+        public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, JsonSerializerSvc serSvc, ProcessLifetimeSvc lifetimeSvc, ILogger logger)
         {
             this.viewModelFactory = viewModelFactory;
             this.windowFactory = windowFactory;
             this.logger = logger;
+
+            ser = serSvc.Serializer;
+
+            lifetimeSvc.ApplicationStop += OnAppStop;
+        }
+
+        private async Task OnAppStop()
+        {
+            stopping = true;
+
+            SaveLayout();
+        }
+
+        public LayoutState FromSettings()
+        {
+            LayoutState state;
+
+            if (Settings.Default.Layout.IsNullOrEmpty())
+            {
+                state = new LayoutState();
+            }
+            else
+            {
+                state = ser.Deserialize<LayoutState>(Settings.Default.Layout);
+            }
+
+            if (state.windows.IsEmpty())
+            {
+                state.windows.Add(new LayoutWindow());
+            }
+
+            if (state.windows.Count == 1 && state.windows[0].tabs.IsEmpty())
+            {
+                state.windows[0].tabs.Add(
+                    new LayoutWindowTab { url = "https://duck.com" }
+                );
+            }
+
+            return state;
+        }
+
+        public void SaveLayout()
+        {
+            LayoutState state = new LayoutState
+            {
+                windows = windows.Select(w => w.ViewModel.ToModel()).ToList()
+            };
+
+            Settings.Default.Layout = ser.Serialize(state);
+            Settings.Default.Save();
         }
 
         public void RestoreLayout()
         {
-            var windows = new List<LayoutWindow>
-            {
-                new LayoutWindow
-                {
-                    left = 200, top = 100, width = 1000, height = 600,
-                    windowState = WindowState.Normal,
-                    tabs = new List<LayoutWindowTab>
-                    {
-                        new LayoutWindowTab
-                        {
-                            url = "https://bing.com",
-                            profile = "FirstProfile",
-                            zoomFactor = 1
-                        },
-                        new LayoutWindowTab
-                        {
-                            url = "https://duck.com",
-                            profile = "SecondProfile",
-                            zoomFactor = 1
-                        }
-                    }
-                }
-            };
+            LayoutState state = FromSettings();
 
-            foreach (LayoutWindow window in windows)
+            foreach (LayoutWindow window in state.windows)
             {
                 LayoutBrowserWindowViewModel vm = viewModelFactory.ForModel(window);
                 LayoutBrowserWindow w = windowFactory.ForViewModel(vm);
+                
+                WindowItem item = new WindowItem(vm, w);
+
+                windows.Add(item);
+
+                w.Activated += (s, e) => OnActivated(item, e);
+                w.Closed += (s, e) => OnClosed(item, e);
 
                 w.Show();
             }
         }
+
+        private void OnClosed(WindowItem item, EventArgs e)
+        {
+            if (stopping)
+            {
+                return;
+            }
+
+            int index = windows.IndexOf(item);
+
+            if (index <= 0)
+            {
+                return;
+            }
+
+            windows.RemoveAt(index);
+        }
+
+        private void OnActivated(WindowItem item, EventArgs e)
+        {
+            int index = windows.IndexOf(item);
+            if (index == 0)
+            {
+                return;
+            }
+
+            if (index <= 0)
+            {
+                // window is orphan, probably a closed one
+                return;
+            }
+
+            // push window item to top
+            windows.RemoveAt(index);
+            windows.Insert(0, item);
+        }
+    }
+
+    public class WindowItem
+    {
+        public WindowItem(LayoutBrowserWindowViewModel viewModel, LayoutBrowserWindow window)
+        {
+            ViewModel = viewModel;
+            Window = window;
+        }
+
+        public LayoutBrowserWindowViewModel ViewModel { get; set; }
+        public LayoutBrowserWindow Window { get; set; }
     }
 }

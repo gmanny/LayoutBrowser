@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Web.WebView2.Core;
 
 namespace LayoutBrowser
@@ -31,6 +33,12 @@ namespace LayoutBrowser
         private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             viewModel.NavigationCompleted(e);
+        }
+
+        public void Dispose()
+        {
+            webView.Visibility = Visibility.Collapsed;
+            webView.Dispose();
         }
     }
 }
