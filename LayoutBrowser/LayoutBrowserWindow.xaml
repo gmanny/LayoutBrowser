@@ -6,16 +6,18 @@
         xmlns:local="clr-namespace:LayoutBrowser"
         xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
-        Title="{Binding Tab.ViewModel.Title}" Height="450" Width="800"
-        DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
+        Title="{Binding CurrentTab.ViewModel.Title}"
+        DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}"
+        Left="{Binding Left, Mode=TwoWay}" Top="{Binding Top, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}"
+        WindowState="{Binding State, Mode=TwoWay}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <ComboBox Grid.Row="0" ItemsSource="{Binding Tabs}" SelectedItem="{Binding Tab, Mode=TwoWay}" DisplayMemberPath="ViewModel.Url" />
+        <ComboBox Grid.Row="0" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" DisplayMemberPath="ViewModel.Title" />
 
-        <ContentPresenter Grid.Row="1" Content="{Binding Tab}" />
+        <ContentPresenter Grid.Row="1" Content="{Binding CurrentTab.Control}" />
     </Grid>
 </Window>

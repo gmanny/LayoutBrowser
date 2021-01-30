@@ -19,7 +19,9 @@ namespace LayoutBrowser
             Bind<IBrowserTabViewModelFactory>().ToFactory();
 
             Bind<LayoutBrowserWindow>().ToSelf();
+            Bind<ILayoutBrowserWindowFactory>().ToFactory();
             Bind<LayoutBrowserWindowViewModel>().ToSelf();
+            Bind<ILayoutBrowserWindowViewModelFactory>().ToFactory();
         }
     }
 }

@@ -4,6 +4,11 @@ using Microsoft.Web.WebView2.Core;
 
 namespace LayoutBrowser
 {
+    public interface ILayoutBrowserWindowFactory
+    {
+        public LayoutBrowserWindow ForViewModel(LayoutBrowserWindowViewModel viewModel);
+    }
+
     /// <summary>
     /// Interaction logic for LayoutBrowserWindow.xaml
     /// </summary>

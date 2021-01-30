@@ -19,6 +19,8 @@ namespace LayoutBrowser
         private readonly LayoutWindowTab model;
         private readonly ILogger logger;
 
+        private readonly string profile;
+
         private readonly CoreWebView2CreationProperties creationArgs;
 
         private readonly ICommand refreshBtnCommand;
@@ -30,18 +32,22 @@ namespace LayoutBrowser
         private string refreshButtonText = "↻";
         private WebView2 webView;
         private string title;
+        private double? zoomFactorToRestore;
 
         public BrowserTabViewModel(LayoutWindowTab model, ILogger logger)
         {
             this.model = model;
             this.logger = logger;
 
+            profile = model.profile;
+            zoomFactorToRestore = model.zoomFactor;
+
             refreshBtnCommand = new WindowCommand(ExecuteRefresh);
             goBtnCommand = new WindowCommand(ExecuteGo);
 
             creationArgs = new CoreWebView2CreationProperties
             {
-                UserDataFolder = Path.Combine("Profiles", model.profile)
+                UserDataFolder = Path.Combine("Profiles", profile)
             };
 
             url = model.url;
@@ -50,6 +56,13 @@ namespace LayoutBrowser
 
         public ICommand RefreshBtnCommand => refreshBtnCommand;
         public ICommand GoBtnCommand => goBtnCommand;
+
+        public LayoutWindowTab ToModel() => new LayoutWindowTab
+        {
+            url = browserSource.ToString(),
+            profile = profile,
+            zoomFactor = webView.ZoomFactor
+        };
 
         private void ExecuteRefresh()
         {
@@ -132,14 +145,20 @@ namespace LayoutBrowser
             }
         }
 
-        private async void PlugIntoWebView(WebView2 webView)
+        private async void PlugIntoWebView(WebView2 wv)
         {
-            await webView.EnsureCoreWebView2Async();
+            await wv.EnsureCoreWebView2Async();
 
             logger.LogDebug($"WebView2 core initialized");
 
-            Title = webView.CoreWebView2.DocumentTitle;
-            webView.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
+            Title = wv.CoreWebView2.DocumentTitle;
+            wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
+
+            if (zoomFactorToRestore != null)
+            {
+                wv.ZoomFactor = zoomFactorToRestore.Value;
+                zoomFactorToRestore = null;
+            }
         }
 
         private void OnTitleChanged(object? sender, object e)

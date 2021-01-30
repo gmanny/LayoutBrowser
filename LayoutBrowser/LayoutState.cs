@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace LayoutBrowser
 {
@@ -12,6 +13,7 @@ namespace LayoutBrowser
     {
         public List<LayoutWindowTab> tabs;
 
+        public WindowState windowState;
         public double left;
         public double top;
         public double width;
