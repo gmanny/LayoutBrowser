@@ -19,7 +19,7 @@
                     Content="{Binding RefreshButtonText}" Padding="0,-2,1,0" Width="20" FontSize="16" />
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Width="20" FontSize="16" />
 
-            <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center">
+            <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" BorderThickness="0,0,0,1">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Return" Command="{Binding GoBtnCommand}" />
                 </TextBox.InputBindings>

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using WpfAppCommon;
@@ -46,6 +49,26 @@ namespace LayoutBrowser
             InputBindings.Add(
                 new KeyBinding(new WindowCommand(run), key, modifier)
             );
+        }
+
+        private void OnTabClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Middle)
+            {
+                return;
+            }
+
+            e.Handled = true;
+
+            ListBoxItem item = (ListBoxItem) sender;
+            WindowTabItem tab = (WindowTabItem) item.DataContext;
+
+            viewModel.CloseTab(tab);
+        }
+
+        private void OnCloseClick(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

@@ -136,13 +136,19 @@ namespace LayoutBrowser
 
         public void CloseCurrentTab()
         {
-            WindowTabItem ct = currentTab;
-            if (ct == null)
+            CloseTab(currentTab);
+        }
+
+        public void CloseTab(WindowTabItem tab)
+        {
+            if (tab == null)
             {
                 return;
             }
 
-            int tabIndex = Tabs.IndexOf(ct);
+            bool isCurrent = currentTab == tab;
+
+            int tabIndex = Tabs.IndexOf(tab);
             if (tabIndex >= 0)
             {
                 Tabs.RemoveAt(tabIndex);
@@ -152,19 +158,22 @@ namespace LayoutBrowser
                 tabIndex = 0;
             }
 
-            ct.Dispose();
+            tab.Dispose();
 
-            if (tabIndex < tabs.Count)
+            if (isCurrent)
             {
-                CurrentTab = tabs[tabIndex];
-            }
-            else if (tabs.NonEmpty())
-            {
-                CurrentTab = tabs[^1];
-            }
-            else
-            {
-                CurrentTab = null;
+                if (tabIndex < tabs.Count)
+                {
+                    CurrentTab = tabs[tabIndex];
+                }
+                else if (tabs.NonEmpty())
+                {
+                    CurrentTab = tabs[^1];
+                }
+                else
+                {
+                    CurrentTab = null;
+                }
             }
         }
 

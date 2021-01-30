@@ -121,7 +121,7 @@ namespace LayoutBrowser
             {
                 SetProperty(ref isNavigating, value);
 
-                RefreshButtonText = value ? "🗙" : "↻";
+                RefreshButtonText = value ? "✕" : "↻";
             }
         }
 
