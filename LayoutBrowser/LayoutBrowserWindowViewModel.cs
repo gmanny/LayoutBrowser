@@ -30,6 +30,7 @@ namespace LayoutBrowser
         private WindowState state;
         private WindowTabItem currentTab;
         private bool showTabBar;
+        private bool uiHidden;
 
         public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
         {
@@ -41,6 +42,7 @@ namespace LayoutBrowser
             width = model.width;
             height = model.height;
             state = model.windowState;
+            uiHidden = model.uiHidden;
 
             tabs.CollectionChanged += OnTabsChanged;
 
@@ -61,6 +63,18 @@ namespace LayoutBrowser
             set => SetProperty(ref showTabBar, value);
         }
 
+        public bool UiHidden
+        {
+            get => uiHidden;
+            set
+            {
+                SetProperty(ref uiHidden, value);
+                OnPropertyChanged(nameof(UiVisible));
+            }
+        }
+
+        public bool UiVisible => !uiHidden;
+
         private void OnTabsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             ShowTabBar = tabs.Count > 1;
@@ -69,7 +83,7 @@ namespace LayoutBrowser
         private WindowTabItem AddTab(LayoutWindowTab tabModel)
         {
             WindowTabItem item = null;
-            BrowserTabViewModel vm = tabVmFactory.ForModel(tabModel);
+            BrowserTabViewModel vm = tabVmFactory.ForModel(tabModel, this);
             vm.CloseRequested += _ =>
             {
                 // ReSharper disable once AccessToModifiedClosure
@@ -166,6 +180,7 @@ namespace LayoutBrowser
             width = width,
             height = height,
             windowState = state,
+            uiHidden = uiHidden,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
             activeTabIndex = tabs.IndexOf(CurrentTab)
         };
@@ -281,10 +296,16 @@ namespace LayoutBrowser
         {
             WindowTabItem tab = AddTab(new LayoutWindowTab
             {
-                url = "https://duck.com"
+                url = null
             });
 
             CurrentTab = tab;
+            
+            // focus url bar
+            tab.Control.Dispatcher.BeginInvoke(() =>
+            {
+                tab.Control.urlBar.Focus();
+            }, DispatcherPriority.Background);
         }
 
         public void NextTab()
@@ -360,6 +381,34 @@ namespace LayoutBrowser
         public void Quit()
         {
             Environment.Exit(0);
+        }
+
+        public void StopLoading()
+        {
+            currentTab?.Control.webView.Stop();
+        }
+
+        public void Refresh()
+        {
+            currentTab?.Control.webView.Reload();
+        }
+
+        public void FocusAddressBar()
+        {
+            WindowTabItem ct = currentTab;
+            if (ct == null)
+            {
+                return;
+            }
+
+            if (ct.Control.urlBar.IsKeyboardFocusWithin)
+            {
+                ct.Control.webView.Focus();
+            }
+            else
+            {
+                ct.Control.urlBar.Focus();
+            }
         }
     }
 

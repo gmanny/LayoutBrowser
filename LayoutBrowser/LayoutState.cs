@@ -19,6 +19,8 @@ namespace LayoutBrowser
         public double top = 100;
         public double width = 800;
         public double height = 500;
+
+        public bool uiHidden;
     }
 
     public class LayoutWindowTab

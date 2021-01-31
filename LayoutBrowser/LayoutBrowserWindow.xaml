@@ -63,36 +63,73 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <Button Grid.Column="1" Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type Button}">
-                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                            <Grid Margin="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="FontSize" Value="14" />
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#e81123" />
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#bbe81123" />
-                                </Trigger>
-                                <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
-                                    <Setter Property="FontSize" Value="10" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ToggleButton IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" IsTabStop="True">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                                <Grid Margin="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="FontSize" Value="14" />
+                                <Setter Property="Content" Value="△" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#99ffffff" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#b2ffffff" />
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
+                                        <Setter Property="FontSize" Value="10" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding UiHidden}" Value="True">
+                                        <Setter Property="Content" Value="▽" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+
+                    <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type Button}">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                                <Grid Margin="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="FontSize" Value="14" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#e81123" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#bbe81123" />
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
+                                        <Setter Property="FontSize" Value="10" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
             </Grid>
 
             <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 

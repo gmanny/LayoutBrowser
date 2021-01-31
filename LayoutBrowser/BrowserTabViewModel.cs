@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text.Encodings.Web;
+using System.Web;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
@@ -12,12 +14,13 @@ namespace LayoutBrowser
 {
     public interface IBrowserTabViewModelFactory
     {
-        public BrowserTabViewModel ForModel(LayoutWindowTab model);
+        public BrowserTabViewModel ForModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow);
     }
 
     public class BrowserTabViewModel : ObservableObject
     {
         private readonly LayoutWindowTab model;
+        private readonly LayoutBrowserWindowViewModel parentWindow;
         private readonly ILogger logger;
 
         private readonly string profile;
@@ -30,14 +33,15 @@ namespace LayoutBrowser
         private Uri browserSource;
         private string url;
         private bool isNavigating;
-        private string refreshButtonText = "↻";
+        private string refreshButtonText = "↻", refreshButtonHint = "Refresh (F5)";
         private WebView2 webView;
         private string title;
         private double zoomFactor;
 
-        public BrowserTabViewModel(LayoutWindowTab model, ILogger logger)
+        public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ILogger logger)
         {
             this.model = model;
+            this.parentWindow = parentWindow;
             this.logger = logger;
 
             profile = model.profile;
@@ -60,6 +64,8 @@ namespace LayoutBrowser
         public ICommand GoBtnCommand => goBtnCommand;
 
         public string Profile => profile;
+
+        public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
@@ -87,7 +93,18 @@ namespace LayoutBrowser
 
             logger.LogDebug($"Navigating to {url}");
 
-            webView.CoreWebView2.Navigate(url);
+            try
+            {
+                webView.CoreWebView2.Navigate(url);
+            }
+            catch (ArgumentException)
+            {
+                string searchUrl = "https://duckduckgo.com/?q=" + HttpUtility.UrlEncode(url);
+
+                webView.CoreWebView2.Navigate(searchUrl);
+            }
+
+            webView.Focus();
         }
 
         public CoreWebView2CreationProperties CreationProperties => creationArgs;
@@ -101,7 +118,14 @@ namespace LayoutBrowser
 
                 logger.LogDebug($"Source changed to {value}");
 
-                Url = value.ToString();
+                if (value.ToString() == "about:blank")
+                {
+                    Url = "";
+                }
+                else
+                {
+                    Url = value.ToString();
+                }
             }
         }
 
@@ -117,6 +141,12 @@ namespace LayoutBrowser
             set => SetProperty(ref refreshButtonText, value);
         }
 
+        public string RefreshButtonHint
+        {
+            get => refreshButtonHint;
+            set => SetProperty(ref refreshButtonHint, value);
+        }
+
         public bool IsNavigating
         {
             get => isNavigating;
@@ -125,6 +155,7 @@ namespace LayoutBrowser
                 SetProperty(ref isNavigating, value);
 
                 RefreshButtonText = value ? "✕" : "↻";
+                RefreshButtonHint = value ? "Stop loading (Esc)" : "Refresh (F5)";
             }
         }
 
