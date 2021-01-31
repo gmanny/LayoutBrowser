@@ -98,7 +98,7 @@
             <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 
                      DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                      utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
-                     Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="White"
+                     Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="#A0FFFFFF"
                      HorizontalAlignment="Left">
                 <ListBox.Style>
                     <Style TargetType="ListBox">
@@ -166,7 +166,7 @@
                                                 <Condition Property="Selector.IsSelectionActive" Value="False"/>
                                                 <Condition Property="Selector.IsSelected" Value="True"/>
                                             </MultiTrigger.Conditions>
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="Transparent"/>
+                                            <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
                                             <Setter Property="Border.BorderBrush" TargetName="Bd">
                                                 <Setter.Value>
                                                     <SolidColorBrush>#90000000</SolidColorBrush>
@@ -178,7 +178,7 @@
                                                 <Condition Property="Selector.IsSelectionActive" Value="True"/>
                                                 <Condition Property="Selector.IsSelected" Value="True"/>
                                             </MultiTrigger.Conditions>
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="Transparent"/>
+                                            <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
                                             <Setter Property="Border.BorderBrush" TargetName="Bd">
                                                 <Setter.Value>
                                                     <SolidColorBrush>#90000000</SolidColorBrush>
@@ -200,7 +200,20 @@
                 </ListBox.ItemContainerStyle>
             </ListBox>
 
-            <Grid Grid.Row="1" Background="White" />
+            <ItemsControl Grid.Row="1" Visibility="Hidden" ItemsSource="{Binding BackgroundLoading}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True" Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:WindowTabItem}">
+                        <ContentPresenter Content="{Binding Control}" Height="{Binding ElementName=backdrop, Path=ActualHeight}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Grid x:Name="backdrop" Grid.Row="1" Background="White" />
 
             <ContentPresenter Grid.Row="1" Content="{Binding CurrentTab.Control}" Margin="-0.25,0,-0.25,-0.25" />
         </Grid>

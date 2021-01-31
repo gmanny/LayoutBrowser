@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.Web.WebView2.Core;
 using MonitorCommon;
 using MvvmHelpers;
 
@@ -18,17 +22,20 @@ namespace LayoutBrowser
     {
         private readonly IBrowserTabFactory tabFactory;
         private readonly IBrowserTabViewModelFactory tabVmFactory;
+        private readonly ILogger logger;
         private readonly ObservableCollection<WindowTabItem> tabs = new ObservableCollection<WindowTabItem>();
+        private readonly ObservableCollection<WindowTabItem> backgroundLoading = new ObservableCollection<WindowTabItem>();
 
         private double left, top, width, height;
         private WindowState state;
         private WindowTabItem currentTab;
         private bool showTabBar;
 
-        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory)
+        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
         {
             this.tabFactory = tabFactory;
             this.tabVmFactory = tabVmFactory;
+            this.logger = logger;
             left = model.left;
             top = model.top;
             width = model.width;
@@ -44,7 +51,7 @@ namespace LayoutBrowser
 
             if (tabs.NonEmpty())
             {
-                currentTab = model.activeTabIndex >= 0 && model.activeTabIndex < tabs.Count ? tabs[model.activeTabIndex] : tabs[0];
+                CurrentTab = model.activeTabIndex >= 0 && model.activeTabIndex < tabs.Count ? tabs[model.activeTabIndex] : tabs[0];
             }
         }
 
@@ -61,15 +68,96 @@ namespace LayoutBrowser
 
         private WindowTabItem AddTab(LayoutWindowTab tabModel)
         {
+            WindowTabItem item = null;
             BrowserTabViewModel vm = tabVmFactory.ForModel(tabModel);
+            vm.CloseRequested += _ =>
+            {
+                // ReSharper disable once AccessToModifiedClosure
+                WindowTabItem itm = item;
+                if (itm != null)
+                {
+                    logger.LogDebug($"Tab {itm.ViewModel.Url} requested to close itself");
+                    CloseTab(itm);
+                }
+            };
+            vm.NewWindowRequested += (_, e) =>
+            {
+                // ReSharper disable once AccessToModifiedClosure
+                WindowTabItem itm = item;
+                if (itm != null)
+                {
+                    OnNewWindowRequested(itm, e);
+                }
+            };
+            vm.ControlInitialized += _ =>
+            {
+                // ReSharper disable once AccessToModifiedClosure
+                WindowTabItem itm = item;
+                if (itm != null)
+                {
+                    backgroundLoading.Remove(itm);
+                }
+            };
+
             BrowserTab t = tabFactory.ForViewModel(vm);
 
-            WindowTabItem item = new WindowTabItem(vm, t);
+            item = new WindowTabItem(vm, t);
 
+            backgroundLoading.Add(item);
             tabs.Add(item);
 
             return item;
         }
+
+        private async void OnNewWindowRequested(WindowTabItem itm, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            CoreWebView2Deferral deferral = e.GetDeferral();
+            try
+            {
+                bool newWindow = (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
+                bool foreground = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+
+                if (newWindow)
+                {
+                    await OnOpenNewWindow(itm, e, foreground);
+                    return;
+                }
+
+                WindowTabItem newTab = AddTab(new LayoutWindowTab
+                {
+                    profile = itm.ViewModel.Profile,
+                    url = null,
+                    title = "New Tab"
+                });
+
+                if (foreground)
+                {
+                    CurrentTab = newTab;
+                }
+
+                await newTab.Control.webView.EnsureCoreWebView2Async();
+                if (newTab.Control.webView.CoreWebView2 != null)
+                {
+                    e.NewWindow = newTab.Control.webView.CoreWebView2;
+                    e.Handled = true;
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        }
+
+        private async Task OnOpenNewWindow(WindowTabItem itm, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
+        {
+            Task result = OpenNewWindow?.Invoke(itm, this, e, foreground);
+            if (result != null)
+            {
+                await result;
+            }
+        }
+
+        public event Func<WindowTabItem, LayoutBrowserWindowViewModel, CoreWebView2NewWindowRequestedEventArgs, bool, Task> OpenNewWindow;
 
         public LayoutWindow ToModel() => new LayoutWindow
         {
@@ -79,16 +167,19 @@ namespace LayoutBrowser
             height = height,
             windowState = state,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
-            activeTabIndex = tabs.IndexOf(currentTab)
+            activeTabIndex = tabs.IndexOf(CurrentTab)
         };
 
         public ObservableCollection<WindowTabItem> Tabs => tabs;
+        public ObservableCollection<WindowTabItem> BackgroundLoading => backgroundLoading;
 
         public WindowTabItem CurrentTab
         {
             get => currentTab;
             set
             {
+                backgroundLoading.Remove(value);
+
                 SetProperty(ref currentTab, value);
 
                 if (value == null)
@@ -136,7 +227,7 @@ namespace LayoutBrowser
 
         public void CloseCurrentTab()
         {
-            CloseTab(currentTab);
+            CloseTab(CurrentTab);
         }
 
         public void CloseTab(WindowTabItem tab)
@@ -146,7 +237,7 @@ namespace LayoutBrowser
                 return;
             }
 
-            bool isCurrent = currentTab == tab;
+            bool isCurrent = CurrentTab == tab;
 
             int tabIndex = Tabs.IndexOf(tab);
             if (tabIndex >= 0)
@@ -173,8 +264,17 @@ namespace LayoutBrowser
                 else
                 {
                     CurrentTab = null;
+
+                    OnWindowBecameEmpty();
                 }
             }
+        }
+
+        public event Action<LayoutBrowserWindowViewModel> WindowBecameEmpty;
+
+        protected virtual void OnWindowBecameEmpty()
+        {
+            WindowBecameEmpty?.Invoke(this);
         }
 
         public void OpenNewTab()
@@ -199,7 +299,7 @@ namespace LayoutBrowser
 
         private void ChangeTabOffs(int offs)
         {
-            WindowTabItem ct = currentTab;
+            WindowTabItem ct = CurrentTab;
             if (ct == null)
             {
                 return;
@@ -234,7 +334,7 @@ namespace LayoutBrowser
 
         private void MoveTabOffs(int offs)
         {
-            WindowTabItem ct = currentTab;
+            WindowTabItem ct = CurrentTab;
             if (ct == null)
             {
                 return;
@@ -255,6 +355,11 @@ namespace LayoutBrowser
             idx = idx % Tabs.Count;
 
             Tabs.Move(tabIndex, idx);
+        }
+
+        public void Quit()
+        {
+            Environment.Exit(0);
         }
     }
 

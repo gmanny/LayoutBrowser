@@ -35,6 +35,8 @@ namespace LayoutBrowser
             AddShortcut(Key.Tab, ModifierKeys.Control | ModifierKeys.Shift, viewModel.PrevTab);
             AddShortcut(Key.Left, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt, viewModel.MovePrev);
             AddShortcut(Key.Right, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt, viewModel.MoveNext);
+            AddShortcut(Key.Q, ModifierKeys.Alt, viewModel.Quit);
+            AddShortcut(Key.Q, ModifierKeys.Control, viewModel.Quit);
         }
 
         public LayoutBrowserWindowViewModel ViewModel => viewModel;

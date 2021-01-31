@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.Extensions.Logging;
+using Microsoft.Web.WebView2.Core;
 using Monitor.ServiceCommon.Services;
 using Monitor.ServiceCommon.Util;
 using MonitorCommon;
@@ -83,19 +85,69 @@ namespace LayoutBrowser
         {
             LayoutState state = FromSettings();
 
-            foreach (LayoutWindow window in state.windows)
+            List<LayoutWindow> copy = state.windows.ToList();
+            copy.Reverse();
+
+            foreach (LayoutWindow window in copy)
             {
-                LayoutBrowserWindowViewModel vm = viewModelFactory.ForModel(window);
-                LayoutBrowserWindow w = windowFactory.ForViewModel(vm);
+                AddWindow(window);
+            }
+        }
+
+        public WindowItem AddWindow(LayoutWindow window, bool noActivation = false)
+        {
+            LayoutBrowserWindowViewModel vm = viewModelFactory.ForModel(window);
+            LayoutBrowserWindow w = windowFactory.ForViewModel(vm);
                 
-                WindowItem item = new WindowItem(vm, w);
+            WindowItem item = new WindowItem(vm, w);
 
-                windows.Add(item);
+            windows.Add(item);
 
-                w.Activated += (s, e) => OnActivated(item, e);
-                w.Closed += (s, e) => OnClosed(item, e);
+            w.Activated += (s, e) => OnActivated(item, e);
+            w.Closed += (s, e) => OnClosed(item, e);
+            vm.WindowBecameEmpty += _ => w.Close();
+            vm.OpenNewWindow += OnOpenNewWindow;
 
-                w.Show();
+            if (noActivation)
+            {
+                w.ShowActivated = false;
+            }
+
+            w.Show();
+
+            if (noActivation)
+            {
+                w.ShowActivated = true;
+            }
+
+            return item;
+        }
+
+        private async Task OnOpenNewWindow(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
+        {
+            WindowItem wnd = AddWindow(new LayoutWindow
+            {
+                tabs =
+                {
+                    new LayoutWindowTab
+                    {
+                        profile = item.ViewModel.Profile,
+                        url = null,
+                        title = "New Tab"
+                    }
+                },
+                left = parentWindow.Left + 30,
+                top = parentWindow.Top + 30,
+                width = parentWindow.Width,
+                height = parentWindow.Height,
+                windowState = WindowState.Normal
+            }, !foreground);
+
+            await wnd.ViewModel.CurrentTab.Control.webView.EnsureCoreWebView2Async();
+            if (wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2 != null)
+            {
+                e.NewWindow = wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2;
+                e.Handled = true;
             }
         }
 

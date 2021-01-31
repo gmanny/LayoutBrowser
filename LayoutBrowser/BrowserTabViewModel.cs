@@ -53,11 +53,13 @@ namespace LayoutBrowser
             };
 
             url = model.url;
-            browserSource = new Uri(model.url);
+            browserSource = model.url.IsNullOrEmpty() ? null : new Uri(model.url);
         }
 
         public ICommand RefreshBtnCommand => refreshBtnCommand;
         public ICommand GoBtnCommand => goBtnCommand;
+
+        public string Profile => profile;
 
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
@@ -168,8 +170,34 @@ namespace LayoutBrowser
 
             logger.LogDebug($"WebView2 core initialized");
 
+            OnControlInitialized();
+
             Title = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
+
+            wv.CoreWebView2.WindowCloseRequested += OnCloseRequested;
+            wv.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+        }
+
+        public event Action<BrowserTabViewModel, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
+
+        private void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            NewWindowRequested?.Invoke(this, e);
+        }
+
+        public event Action<BrowserTabViewModel> CloseRequested;
+
+        private void OnCloseRequested(object sender, object e)
+        {
+            CloseRequested?.Invoke(this);
+        }
+
+        public event Action<BrowserTabViewModel> ControlInitialized;
+
+        private void OnControlInitialized()
+        {
+            ControlInitialized?.Invoke(this);
         }
 
         private void OnTitleChanged(object sender, object e)
