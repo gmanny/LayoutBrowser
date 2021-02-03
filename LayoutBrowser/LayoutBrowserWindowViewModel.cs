@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -139,7 +140,7 @@ namespace LayoutBrowser
 
                 WindowTabItem newTab = AddTab(new LayoutWindowTab
                 {
-                    profile = itm.ViewModel.Profile,
+                    profile = itm.ViewModel.Profile.Name,
                     url = null,
                     title = "New Tab"
                 });
@@ -205,7 +206,23 @@ namespace LayoutBrowser
                 value.Control.Dispatcher.BeginInvoke(() =>
                 {
                     value.Control.urlBar.Focus();
-                    value.Control.webView.Focus();
+                    try
+                    {
+                        value.Control.webView.Focus();
+                    }
+                    catch (COMException)
+                    {
+                        value.Control.Dispatcher.BeginInvoke(async () =>
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+                            try
+                            {
+                                value.Control.webView.Focus();
+                            }
+                            catch { }
+                        }, DispatcherPriority.Background);
+                    }
                 }, DispatcherPriority.Background);
             }
         }

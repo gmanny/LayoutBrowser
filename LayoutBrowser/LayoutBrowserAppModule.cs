@@ -8,6 +8,7 @@ namespace LayoutBrowser
         public override void Load()
         {
             Bind<LayoutManager>().ToSelf().InSingletonScope();
+            Bind<ProfileManager>().ToSelf().InSingletonScope();
 
             // UI
             Bind<App>().ToSelf().InSingletonScope();
@@ -15,6 +16,8 @@ namespace LayoutBrowser
             // -> windows
             Bind<BrowserTab>().ToSelf();
             Bind<IBrowserTabFactory>().ToFactory();
+            Bind<ProfileListViewModel>().ToSelf();
+            Bind<IProfileListViewModelFactory>().ToFactory();
             Bind<BrowserTabViewModel>().ToSelf();
             Bind<IBrowserTabViewModelFactory>().ToFactory();
 

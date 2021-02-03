@@ -131,7 +131,7 @@ namespace LayoutBrowser
                 {
                     new LayoutWindowTab
                     {
-                        profile = item.ViewModel.Profile,
+                        profile = item.ViewModel.Profile.Name,
                         url = null,
                         title = "New Tab"
                     }

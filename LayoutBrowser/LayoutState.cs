@@ -27,7 +27,7 @@ namespace LayoutBrowser
     {
         public string url;
         public string title = "New Tab";
-        public string profile = "default";
+        public string profile = ProfileManager.DefaultProfile;
 
         public double zoomFactor = 1;
 

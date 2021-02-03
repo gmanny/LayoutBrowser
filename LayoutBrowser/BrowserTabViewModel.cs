@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Text.Encodings.Web;
 using System.Web;
 using System.Windows.Input;
+using LanguageExt;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -21,9 +21,11 @@ namespace LayoutBrowser
     {
         private readonly LayoutWindowTab model;
         private readonly LayoutBrowserWindowViewModel parentWindow;
+        private readonly ProfileManager profileManager;
         private readonly ILogger logger;
-
-        private readonly string profile;
+        
+        private readonly ProfileItem profile;
+        private readonly ProfileListViewModel profileList;
 
         private readonly CoreWebView2CreationProperties creationArgs;
 
@@ -38,13 +40,23 @@ namespace LayoutBrowser
         private string title;
         private double zoomFactor;
 
-        public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ILogger logger)
+        public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow,
+            ProfileManager profileManager, IProfileListViewModelFactory profileListFactory, ILogger logger)
         {
             this.model = model;
             this.parentWindow = parentWindow;
+            this.profileManager = profileManager;
             this.logger = logger;
 
-            profile = model.profile;
+            Option<ProfileItem> pf = profileManager.Profiles.Find(p => p.Name == model.profile);
+            if (pf.IsNone)
+            {
+                pf = profileManager.AddProfile(model.profile, model.profile.FirstLetterToUpper());
+            }
+            profile = pf.Get();
+
+            profileList = profileListFactory.ForOwnerTab(this);
+
             zoomFactor = model.zoomFactor;
             title = model.title;
 
@@ -53,7 +65,7 @@ namespace LayoutBrowser
 
             creationArgs = new CoreWebView2CreationProperties
             {
-                UserDataFolder = Path.Combine("Profiles", profile)
+                UserDataFolder = Path.Combine("Profiles", profile.Name)
             };
 
             url = model.url;
@@ -63,7 +75,8 @@ namespace LayoutBrowser
         public ICommand RefreshBtnCommand => refreshBtnCommand;
         public ICommand GoBtnCommand => goBtnCommand;
 
-        public string Profile => profile;
+        public ProfileItem Profile => profile;
+        public ProfileListViewModel ProfileList => profileList;
 
         public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 
@@ -71,7 +84,7 @@ namespace LayoutBrowser
         {
             url = browserSource.ToString(),
             title = title,
-            profile = profile,
+            profile = profile.Name,
             zoomFactor = zoomFactor
         };
 
@@ -244,6 +257,11 @@ namespace LayoutBrowser
         public void NavigationCompleted(CoreWebView2NavigationCompletedEventArgs e)
         {
             IsNavigating = false;
+        }
+
+        public void NewProfileSelected(ProfileItem piModel)
+        {
+            throw new NotImplementedException();
         }
     }
 }

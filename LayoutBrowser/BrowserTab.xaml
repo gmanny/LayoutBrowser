@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:LayoutBrowser"
              xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
              xmlns:utils="clr-namespace:WpfAppCommon.Utils;assembly=WpfAppCommon"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
@@ -24,6 +25,51 @@
                     Content="{Binding RefreshButtonText}" ToolTip="{Binding RefreshButtonHint}" Padding="0,-2,1,0" Width="20" FontSize="16" />
 
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Width="20" FontSize="16" />
+            <Button DockPanel.Dock="Right" ToolTip="Browser profile used for this tab" Margin="0,0,-1,0">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Profile.Caption}" />
+                        <Separator Margin="2,0,1,0">
+                            <Separator.LayoutTransform>
+                                <TransformGroup>
+                                    <TransformGroup.Children>
+                                        <TransformCollection>
+                                            <RotateTransform Angle="90"/>
+                                        </TransformCollection>
+                                    </TransformGroup.Children>
+                                </TransformGroup>
+                            </Separator.LayoutTransform>
+                        </Separator>
+                        <Path Margin="2" VerticalAlignment="Center" Width="6" Fill="Black" Stretch="Uniform" HorizontalAlignment="Right" Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z "/>
+                    </StackPanel>
+                </Button.Content>
+                <i:Interaction.Behaviors>
+                    <utils:DropDownButtonBehavior />
+                </i:Interaction.Behaviors>
+
+                <Button.Resources>
+                    <local:DefaultItemContainerTemplateSelector x:Key="Dicts" />
+                </Button.Resources>
+
+                <Button.ContextMenu>
+                    <ContextMenu ItemsSource="{Binding ProfileList.ListItems}" ItemContainerTemplateSelector="{StaticResource Dicts}" UsesItemContainerTemplate="True">
+                        <ContextMenu.Resources>
+                            <ItemContainerTemplate x:Key="{x:Type local:ProfileListItem}" DataType="{x:Type local:ProfileListItem}">
+                                <MenuItem Header="{Binding Model.Caption}"
+                                          IsChecked="{Binding IsChecked, Mode=OneWay}"
+                                          Command="{Binding SelectedCommand}"/>
+                            </ItemContainerTemplate>
+                            <ItemContainerTemplate x:Key="{x:Type local:ProfileListSeparator}" DataType="{x:Type local:ProfileListSeparator}">
+                                <Separator />
+                            </ItemContainerTemplate>
+                            <ItemContainerTemplate x:Key="{x:Type local:ProfileListCreateNew}" DataType="{x:Type local:ProfileListCreateNew}">
+                                <MenuItem Header="Create New ..."
+                                          Command="{Binding SelectedCommand}"/>
+                            </ItemContainerTemplate>
+                        </ContextMenu.Resources>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
 
             <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" BorderThickness="0,0,0,1"
                      utils:TextBoxBehavior.SelectAllTextOnFocus="True" utils:TextBoxBehavior.UnselectAllTextOnFocusLeave="True">
