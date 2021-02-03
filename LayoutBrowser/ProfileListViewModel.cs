@@ -4,9 +4,13 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Castle.Core.Internal;
+using LanguageExt;
+using Microsoft.VisualBasic;
 using MvvmHelpers;
 using WpfAppCommon;
 using WpfAppCommon.CollectionSegmenting;
+using WpfAppCommon.Prompt;
 
 namespace LayoutBrowser
 {
@@ -52,13 +56,21 @@ namespace LayoutBrowser
 
         private void OnCreateNewProfile()
         {
-            throw new NotImplementedException();
+            string profileCaption = InputBox.Show("Please enter new profile name:", "Create profile");
+            if (profileCaption.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            string profileName = profileCaption.ToLowerInvariant().Replace(' ', '_');
+            ProfileItem profile = profileManager.AddProfile(profileName, profileCaption);
+
+            OnProfileSelected(profile);
         }
 
-        private void OnProfileSelected(ProfileListItem pi)
-        {
-            ownerTab.NewProfileSelected(pi.Model);
-        }
+        private void OnProfileSelected(ProfileListItem pi) => OnProfileSelected(pi.Model);
+
+        private void OnProfileSelected(ProfileItem pi) => ownerTab.OnNewProfileSelected(pi);
     }
 
     public class DefaultItemContainerTemplateSelector : ItemContainerTemplateSelector

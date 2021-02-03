@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Monitor.ServiceCommon.Services;
@@ -107,6 +108,7 @@ namespace LayoutBrowser
             w.Closed += (s, e) => OnClosed(item, e);
             vm.WindowBecameEmpty += _ => w.Close();
             vm.OpenNewWindow += OnOpenNewWindow;
+            vm.PopoutRequested += (w, t) => PopoutTab(t, w);
 
             if (noActivation)
             {
@@ -115,12 +117,21 @@ namespace LayoutBrowser
 
             w.Show();
 
-            if (noActivation)
-            {
-                w.ShowActivated = true;
-            }
-
             return item;
+        }
+
+        private void PopoutTab(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow)
+        {
+            WindowItem wnd = AddWindow(new LayoutWindow
+            {
+                left = parentWindow.Left + 30,
+                top = parentWindow.Top + 30,
+                width = parentWindow.Width,
+                height = parentWindow.Height,
+                windowState = WindowState.Normal
+            });
+
+            wnd.ViewModel.AddForeignTab(item, true);
         }
 
         private async Task OnOpenNewWindow(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
@@ -143,11 +154,21 @@ namespace LayoutBrowser
                 windowState = WindowState.Normal
             }, !foreground);
 
-            await wnd.ViewModel.CurrentTab.Control.webView.EnsureCoreWebView2Async();
-            if (wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2 != null)
+            if (e != null)
             {
-                e.NewWindow = wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2;
-                e.Handled = true;
+                await wnd.ViewModel.CurrentTab.Control.webView.EnsureCoreWebView2Async();
+                if (wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2 != null)
+                {
+                    e.NewWindow = wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2;
+                    e.Handled = true;
+                }
+            }
+            else
+            {
+                await wnd.Window.Dispatcher.BeginInvoke(() =>
+                {
+                    wnd.ViewModel.CurrentTab.Control.urlBar.Focus();
+                }, DispatcherPriority.Background);
             }
         }
 

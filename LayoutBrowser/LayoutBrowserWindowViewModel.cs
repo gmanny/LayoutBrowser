@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using LanguageExt;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using MonitorCommon;
@@ -83,45 +84,72 @@ namespace LayoutBrowser
 
         private WindowTabItem AddTab(LayoutWindowTab tabModel)
         {
-            WindowTabItem item = null;
             BrowserTabViewModel vm = tabVmFactory.ForModel(tabModel, this);
-            vm.CloseRequested += _ =>
-            {
-                // ReSharper disable once AccessToModifiedClosure
-                WindowTabItem itm = item;
-                if (itm != null)
-                {
-                    logger.LogDebug($"Tab {itm.ViewModel.Url} requested to close itself");
-                    CloseTab(itm);
-                }
-            };
-            vm.NewWindowRequested += (_, e) =>
-            {
-                // ReSharper disable once AccessToModifiedClosure
-                WindowTabItem itm = item;
-                if (itm != null)
-                {
-                    OnNewWindowRequested(itm, e);
-                }
-            };
-            vm.ControlInitialized += _ =>
-            {
-                // ReSharper disable once AccessToModifiedClosure
-                WindowTabItem itm = item;
-                if (itm != null)
-                {
-                    backgroundLoading.Remove(itm);
-                }
-            };
+
+            vm.CloseRequested += OnTabCloseRequested;
+            vm.NewWindowRequested += OnTabNewWindowRequested;
+            vm.ControlInitialized += OnTabControlInitialized;
+            vm.NewProfileSelected += OnNewProfileSelected;
 
             BrowserTab t = tabFactory.ForViewModel(vm);
 
-            item = new WindowTabItem(vm, t);
+            WindowTabItem item = new WindowTabItem(vm, t);
 
             backgroundLoading.Add(item);
             tabs.Add(item);
 
             return item;
+        }
+
+        private void OnNewProfileSelected(ProfileItem pf)
+        {
+            OpenNewTab(pf.Name);
+        }
+
+        public WindowTabItem AddForeignTab(WindowTabItem item, bool foreground)
+        {
+            item.ViewModel.CloseRequested += OnTabCloseRequested;
+            item.ViewModel.NewWindowRequested += OnTabNewWindowRequested;
+            item.ViewModel.NewProfileSelected += OnNewProfileSelected;
+
+            tabs.Add(item);
+
+            if (foreground)
+            {
+                CurrentTab = item;
+            }
+
+            return item;
+        }
+
+        private void OnTabControlInitialized(BrowserTabViewModel vm)
+        {
+            Option<WindowTabItem> itm = tabs.Find(t => t.ViewModel == vm);
+            foreach (WindowTabItem tabItem in itm)
+            {
+                backgroundLoading.Remove(tabItem);
+            }
+
+            vm.ControlInitialized -= OnTabControlInitialized;
+        }
+
+        private void OnTabNewWindowRequested(BrowserTabViewModel vm, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            Option<WindowTabItem> itm = tabs.Find(t => t.ViewModel == vm);
+            foreach (WindowTabItem tabItem in itm)
+            {
+                OnNewWindowRequested(tabItem, e);
+            }
+        }
+
+        private void OnTabCloseRequested(BrowserTabViewModel vm)
+        {
+            Option<WindowTabItem> itm = tabs.Find(t => t.ViewModel == vm);
+            foreach (WindowTabItem tabItem in itm)
+            {
+                logger.LogDebug($"Tab {tabItem.ViewModel.Url} requested to close itself");
+                CloseTab(tabItem);
+            }
         }
 
         private async void OnNewWindowRequested(WindowTabItem itm, CoreWebView2NewWindowRequestedEventArgs e)
@@ -262,7 +290,7 @@ namespace LayoutBrowser
             CloseTab(CurrentTab);
         }
 
-        public void CloseTab(WindowTabItem tab)
+        public void CloseTab(WindowTabItem tab, bool doDispose = true)
         {
             if (tab == null)
             {
@@ -281,7 +309,15 @@ namespace LayoutBrowser
                 tabIndex = 0;
             }
 
-            tab.Dispose();
+            tab.ViewModel.CloseRequested -= OnTabCloseRequested;
+            tab.ViewModel.NewWindowRequested -= OnTabNewWindowRequested;
+            tab.ViewModel.ControlInitialized -= OnTabControlInitialized;
+            tab.ViewModel.NewProfileSelected -= OnNewProfileSelected;
+
+            if (doDispose)
+            {
+                tab.Dispose();
+            }
 
             if (isCurrent)
             {
@@ -309,11 +345,12 @@ namespace LayoutBrowser
             WindowBecameEmpty?.Invoke(this);
         }
 
-        public void OpenNewTab()
+        public void OpenNewTab(string profile = null)
         {
             WindowTabItem tab = AddTab(new LayoutWindowTab
             {
-                url = null
+                url = null,
+                profile = profile ?? currentTab.ViewModel.Profile.Name ?? ProfileManager.DefaultProfile
             });
 
             CurrentTab = tab;
@@ -426,6 +463,33 @@ namespace LayoutBrowser
             {
                 ct.Control.urlBar.Focus();
             }
+        }
+        
+        public event Action<LayoutBrowserWindowViewModel, WindowTabItem> PopoutRequested;
+
+        public void RequestPopout()
+        {
+            if (tabs.Count <= 1)
+            {
+                logger.LogInformation("Preventing tab pop-out because window doesn't have enough tabs left");
+
+                return;
+            }
+
+            WindowTabItem tab = CurrentTab;
+            if (tab == null)
+            {
+                return;
+            }
+
+            CloseTab(tab, false);
+
+            PopoutRequested?.Invoke(this, tab);
+        }
+
+        public async void OpenNewEmptyWindow()
+        {
+            await OnOpenNewWindow(currentTab, null, true);
         }
     }
 

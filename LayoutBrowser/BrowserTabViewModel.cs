@@ -259,9 +259,11 @@ namespace LayoutBrowser
             IsNavigating = false;
         }
 
-        public void NewProfileSelected(ProfileItem piModel)
+        public event Action<ProfileItem> NewProfileSelected;
+
+        public void OnNewProfileSelected(ProfileItem piModel)
         {
-            throw new NotImplementedException();
+            NewProfileSelected?.Invoke(piModel);
         }
     }
 }

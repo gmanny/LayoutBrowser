@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
 using Microsoft.Web.WebView2.Core;
 
 namespace LayoutBrowser

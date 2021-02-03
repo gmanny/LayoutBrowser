@@ -1,4 +1,5 @@
-﻿using Ninject.Extensions.Factory;
+﻿using Monitor.ServiceCommon.Services.DiEager;
+using Ninject.Extensions.Factory;
 using Ninject.Modules;
 
 namespace LayoutBrowser
@@ -12,6 +13,7 @@ namespace LayoutBrowser
 
             // UI
             Bind<App>().ToSelf().InSingletonScope();
+            Bind<AppUnhandledExceptionSvc>().ToSelf().AsEagerSingleton();
 
             // -> windows
             Bind<BrowserTab>().ToSelf();
