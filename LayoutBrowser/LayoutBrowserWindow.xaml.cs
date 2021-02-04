@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using WpfAppCommon;
@@ -21,10 +22,12 @@ namespace LayoutBrowser
         private readonly LayoutBrowserWindowViewModel viewModel;
         private readonly ILogger logger;
 
-        public LayoutBrowserWindow(LayoutBrowserWindowViewModel viewModel, ILogger logger)
+        public LayoutBrowserWindow(LayoutBrowserWindowViewModel viewModel, LayoutManager layoutManager, ILogger logger)
         {
             this.viewModel = viewModel;
             this.logger = logger;
+
+            viewModel.WindowCloseRequested += Close;
 
             InitializeComponent();
 
@@ -42,15 +45,16 @@ namespace LayoutBrowser
             AddShortcut(Key.P, ModifierKeys.Control | ModifierKeys.Shift, viewModel.RequestPopout);
             AddShortcut(Key.N, ModifierKeys.Control, viewModel.OpenNewEmptyWindow);
             AddShortcut(Key.N, ModifierKeys.Control | ModifierKeys.Shift, viewModel.OpenNewEmptyWindow);
+            AddShortcut(Key.T, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.ReopenLastClosedItem);
+
+            Dispatcher.BeginInvoke(() =>
+            {
+                tabBar.ScrollIntoView(viewModel.CurrentTab);
+            }, DispatcherPriority.Background);
         }
 
         public LayoutBrowserWindowViewModel ViewModel => viewModel;
 
-        private void WebView_OnCoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
-        {
-            logger.LogInformation($"WV2 initialized, success = {e.IsSuccess}");
-        }
-        
         protected void AddShortcut(Key key, ModifierKeys modifier, Action run)
         {
             InputBindings.Add(

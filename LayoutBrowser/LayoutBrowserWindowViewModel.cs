@@ -28,6 +28,8 @@ namespace LayoutBrowser
         private readonly ObservableCollection<WindowTabItem> tabs = new ObservableCollection<WindowTabItem>();
         private readonly ObservableCollection<WindowTabItem> backgroundLoading = new ObservableCollection<WindowTabItem>();
 
+        private readonly Guid id;
+
         private double left, top, width, height;
         private WindowState state;
         private WindowTabItem currentTab;
@@ -39,6 +41,9 @@ namespace LayoutBrowser
             this.tabFactory = tabFactory;
             this.tabVmFactory = tabVmFactory;
             this.logger = logger;
+
+            id = model.id;
+
             left = model.left;
             top = model.top;
             width = model.width;
@@ -58,6 +63,8 @@ namespace LayoutBrowser
                 CurrentTab = model.activeTabIndex >= 0 && model.activeTabIndex < tabs.Count ? tabs[model.activeTabIndex] : tabs[0];
             }
         }
+
+        public Guid Id => id;
 
         public bool ShowTabBar
         {
@@ -82,7 +89,7 @@ namespace LayoutBrowser
             ShowTabBar = tabs.Count > 1;
         }
 
-        private WindowTabItem AddTab(LayoutWindowTab tabModel)
+        public WindowTabItem AddTab(LayoutWindowTab tabModel, int position = -1)
         {
             BrowserTabViewModel vm = tabVmFactory.ForModel(tabModel, this);
 
@@ -96,7 +103,14 @@ namespace LayoutBrowser
             WindowTabItem item = new WindowTabItem(vm, t);
 
             backgroundLoading.Add(item);
-            tabs.Add(item);
+            if (position >= 0 && position < tabs.Count)
+            {
+                tabs.Insert(position, item);
+            }
+            else
+            {
+                tabs.Add(item);
+            }
 
             return item;
         }
@@ -204,6 +218,7 @@ namespace LayoutBrowser
 
         public LayoutWindow ToModel() => new LayoutWindow
         {
+            id = id,
             left = left,
             top = top,
             width = width,
@@ -287,8 +302,24 @@ namespace LayoutBrowser
 
         public void CloseCurrentTab()
         {
-            CloseTab(CurrentTab);
+            if (tabs.Count <= 1)
+            {
+                CloseWindow();
+            }
+            else
+            {
+                CloseTab(CurrentTab);
+            }
         }
+
+        public event Action WindowCloseRequested;
+
+        private void CloseWindow()
+        {
+            WindowCloseRequested?.Invoke();
+        }
+
+        public event Action<LayoutBrowserWindowViewModel, WindowTabItem, int> TabClosed;
 
         public void CloseTab(WindowTabItem tab, bool doDispose = true)
         {
@@ -316,6 +347,8 @@ namespace LayoutBrowser
 
             if (doDispose)
             {
+                TabClosed?.Invoke(this, tab, tabIndex);
+
                 tab.Dispose();
             }
 

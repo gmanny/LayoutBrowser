@@ -63,7 +63,7 @@
                                 <Separator />
                             </ItemContainerTemplate>
                             <ItemContainerTemplate x:Key="{x:Type local:ProfileListCreateNew}" DataType="{x:Type local:ProfileListCreateNew}">
-                                <MenuItem Header="Create New ..."
+                                <MenuItem Header="Create New..."
                                           Command="{Binding SelectedCommand}"/>
                             </ItemContainerTemplate>
                         </ContextMenu.Resources>

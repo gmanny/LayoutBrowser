@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +23,9 @@ namespace LayoutBrowser
         private readonly JsonSerializer ser;
 
         private readonly List<WindowItem> windows = new List<WindowItem>();
+        private readonly ConcurrentDictionary<Guid, WindowItem> windowHash = new ConcurrentDictionary<Guid, WindowItem>();
+
+        private ClosedItemHistory closedItems;
 
         private bool stopping;
 
@@ -79,11 +83,21 @@ namespace LayoutBrowser
             };
 
             Settings.Default.Layout = ser.Serialize(state);
+            Settings.Default.ClosedHistory = ser.Serialize(closedItems);
             Settings.Default.Save();
         }
 
         public void RestoreLayout()
         {
+            if (Settings.Default.ClosedHistory.IsNullOrEmpty())
+            {
+                closedItems = new ClosedItemHistory();
+            }
+            else
+            {
+                closedItems = ser.Deserialize<ClosedItemHistory>(Settings.Default.ClosedHistory);
+            }
+
             LayoutState state = FromSettings();
 
             List<LayoutWindow> copy = state.windows.ToList();
@@ -92,6 +106,8 @@ namespace LayoutBrowser
             foreach (LayoutWindow window in copy)
             {
                 AddWindow(window);
+
+                logger.LogInformation($"Restored window {window.id}");
             }
         }
 
@@ -103,12 +119,17 @@ namespace LayoutBrowser
             WindowItem item = new WindowItem(vm, w);
 
             windows.Add(item);
+            if (!windowHash.TryAdd(item.ViewModel.Id, item))
+            {
+                logger.LogDebug($"Found window with duplicate ID {item.ViewModel.Id}");
+            }
 
             w.Activated += (s, e) => OnActivated(item, e);
             w.Closed += (s, e) => OnClosed(item, e);
             vm.WindowBecameEmpty += _ => w.Close();
             vm.OpenNewWindow += OnOpenNewWindow;
             vm.PopoutRequested += (w, t) => PopoutTab(t, w);
+            vm.TabClosed += OnWindowTabClosed;
 
             if (noActivation)
             {
@@ -118,6 +139,18 @@ namespace LayoutBrowser
             w.Show();
 
             return item;
+        }
+
+        private void OnWindowTabClosed(LayoutBrowserWindowViewModel wnd, WindowTabItem tab, int tabIndex)
+        {
+            closedItems.closedItems.Add(new ClosedLayoutTab
+            {
+                tab = tab.ViewModel.ToModel(),
+                tabPosition = tabIndex,
+                windowId = wnd.Id
+            });
+
+            TrimClosedItems();
         }
 
         private void PopoutTab(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow)
@@ -179,6 +212,16 @@ namespace LayoutBrowser
                 return;
             }
 
+            if (item.ViewModel.Tabs.NonEmpty())
+            {
+                closedItems.closedItems.Add(new ClosedLayoutWindow
+                {
+                    window = item.ViewModel.ToModel()
+                });
+
+                TrimClosedItems();
+            }
+
             int index = windows.IndexOf(item);
 
             if (index <= 0)
@@ -187,6 +230,18 @@ namespace LayoutBrowser
             }
 
             windows.RemoveAt(index);
+            if (!windowHash.TryRemove(item.ViewModel.Id, out _))
+            {
+                logger.LogDebug($"Couldn't find window with id {item.ViewModel.Id} in window hash");
+            }
+        }
+
+        private void TrimClosedItems()
+        {
+            if (closedItems.closedItems.Count > 3000)
+            {
+                closedItems.closedItems = closedItems.closedItems.Skip(1000).ToList();
+            }
         }
 
         private void OnActivated(WindowItem item, EventArgs e)
@@ -206,6 +261,50 @@ namespace LayoutBrowser
             // push window item to top
             windows.RemoveAt(index);
             windows.Insert(0, item);
+        }
+
+        public void ReopenLastClosedItem()
+        {
+            if (closedItems.closedItems.IsEmpty())
+            {
+                return;
+            }
+
+            IClosedItem lastItem = closedItems.closedItems[^1];
+            closedItems.closedItems.RemoveAt(closedItems.closedItems.Count - 1);
+
+            switch (lastItem)
+            {
+                case ClosedLayoutWindow wnd:
+                {
+                    AddWindow(wnd.window);
+                } break;
+
+                case ClosedLayoutTab tab:
+                {
+                    if (!windowHash.TryGetValue(tab.windowId, out WindowItem wnd))
+                    {
+                        if (windows.NonEmpty())
+                        {
+                            // last activated window (current window)
+                            wnd = windows[0];
+                        }
+                        else
+                        {
+                            wnd = AddWindow(new LayoutWindow());
+                        }
+                    }
+
+                    WindowTabItem tabItem = wnd.ViewModel.AddTab(tab.tab, tab.tabPosition);
+                    wnd.ViewModel.CurrentTab = tabItem;
+
+                    wnd.Window.Activate();
+                } break;
+
+                default:
+                    logger.LogWarning($"Unknown type of closed item encountered: {lastItem.GetType().FullName} / {lastItem}");
+                    break;
+            }
         }
     }
 

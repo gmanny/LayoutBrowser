@@ -46,5 +46,17 @@ namespace LayoutBrowser {
                 this["Profiles"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ClosedHistory {
+            get {
+                return ((string)(this["ClosedHistory"]));
+            }
+            set {
+                this["ClosedHistory"] = value;
+            }
+        }
     }
 }

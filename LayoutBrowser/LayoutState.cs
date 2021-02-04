@@ -21,6 +21,8 @@ namespace LayoutBrowser
         public double height = 500;
 
         public bool uiHidden;
+
+        public Guid id = Guid.NewGuid();
     }
 
     public class LayoutWindowTab
@@ -32,5 +34,26 @@ namespace LayoutBrowser
         public double zoomFactor = 1;
 
         public TimeSpan? autoRefresh;
+    }
+
+    public class ClosedItemHistory
+    {
+        // oldest -> newest
+        public List<IClosedItem> closedItems = new List<IClosedItem>();
+    }
+
+    public interface IClosedItem { }
+
+    public class ClosedLayoutWindow : IClosedItem
+    {
+        public LayoutWindow window;
+    }
+
+    public class ClosedLayoutTab : IClosedItem
+    {
+        public LayoutWindowTab tab;
+
+        public Guid windowId;
+        public int tabPosition;
     }
 }
