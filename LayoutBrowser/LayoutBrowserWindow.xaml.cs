@@ -40,6 +40,7 @@ namespace LayoutBrowser
             AddShortcut(Key.F5, ModifierKeys.None, viewModel.Refresh);
             AddShortcut(Key.F6, ModifierKeys.None, viewModel.FocusAddressBar);
             AddShortcut(Key.P, ModifierKeys.Control | ModifierKeys.Shift, viewModel.RequestPopout);
+            AddShortcut(Key.N, ModifierKeys.Control, viewModel.OpenNewEmptyWindow);
             AddShortcut(Key.N, ModifierKeys.Control | ModifierKeys.Shift, viewModel.OpenNewEmptyWindow);
         }
 
