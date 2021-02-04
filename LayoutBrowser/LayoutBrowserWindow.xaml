@@ -18,7 +18,7 @@
         <WindowChrome UseAeroCaptionButtons="True" />
     </WindowChrome.WindowChrome>
 
-    <Grid Margin="3">
+    <Grid Margin="3" x:Name="resizeBorderMrg">
         <Grid.Style>
             <Style TargetType="Grid">
                 <Setter Property="Background" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" />
@@ -35,7 +35,8 @@
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
                 <DataTemplate DataType="{x:Type local:WindowTabItem}">
-                    <TextBlock Text="{Binding ViewModel.Title}" TextTrimming="CharacterEllipsis" MaxWidth="170" />
+                    <TextBlock Text="{Binding ViewModel.Title}" TextTrimming="CharacterEllipsis" MaxWidth="170"
+                               ToolTip="{Binding ViewModel.Title}" />
                 </DataTemplate>
             </Grid.Resources>
 
@@ -63,8 +64,115 @@
                     </TextBlock.Style>
                 </TextBlock>
 
+                <Grid Grid.Column="0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Margin" Value="0,0,40,0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=wholeWindow, Path=WindowState}" Value="Maximized">
+                                    <Setter Property="Margin" Value="0,0,0,0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 
+                             DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                             utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
+                             Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="#A0FFFFFF"
+                             HorizontalAlignment="Left" Margin="0">
+                        <i:Interaction.Behaviors>
+                            <utils:ScrollIntoViewForListBox />
+                        </i:Interaction.Behaviors>
+
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <EventSetter Event="MouseDown" Handler="OnTabClicked" />
+                                <Setter Property="Padding" Value="5,2" />
+                                <Setter Property="Margin" Value="0,0,-1,0" />
+                                <Setter Property="BorderThickness" Value="1,1,1,0" />
+                                <Setter Property="BorderBrush" Value="#50000000" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+                                                    Padding="{TemplateBinding Control.Padding}"
+                                                    BorderBrush="{TemplateBinding Border.BorderBrush}"
+                                                    Background="{TemplateBinding Panel.Background}"
+                                                    Name="Bd"
+                                                    SnapsToDevicePixels="True">
+                                                <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
+                                                          ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                                                          ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                                          HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                                                          VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                                                          SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="Selector.IsSelected" Value="False">
+                                                    <Setter Property="Panel.Background" TargetName="Bd" Value="#20000000"/>
+                                                    <Setter Property="Border.BorderBrush" TargetName="Bd">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush>#50000000</SolidColorBrush>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                                                    <Setter Property="Panel.Background" TargetName="Bd" Value="Transparent"/>
+                                                    <Setter Property="Border.BorderBrush" TargetName="Bd">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush>#90000000</SolidColorBrush>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                                        <Condition Property="Selector.IsSelected" Value="True"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
+                                                    <Setter Property="Border.BorderBrush" TargetName="Bd">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush>#90000000</SolidColorBrush>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </MultiTrigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                                        <Condition Property="Selector.IsSelected" Value="True"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
+                                                    <Setter Property="Border.BorderBrush" TargetName="Bd">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush>#90000000</SolidColorBrush>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </MultiTrigger>
+                                                <Trigger Property="UIElement.IsEnabled" Value="False">
+                                                    <Setter Property="TextElement.Foreground" TargetName="Bd">
+                                                        <Setter.Value>
+                                                            <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Grid>
+
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ToggleButton IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" IsTabStop="True">
+                    <ToggleButton IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" IsTabStop="True" ToolTip="Toggle UI visibility (Ctrl+Shift+U)">
                         <ToggleButton.Style>
                             <Style TargetType="ToggleButton">
                                 <Setter Property="Template">
@@ -131,111 +239,6 @@
                     </Button>
                 </StackPanel>
             </Grid>
-
-            <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 
-                     DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                     utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
-                     Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="#A0FFFFFF"
-                     HorizontalAlignment="Left">
-                <ListBox.Style>
-                    <Style TargetType="ListBox">
-                        <Setter Property="Margin" Value="0,0,75,0" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=wholeWindow, Path=WindowState}" Value="Maximized">
-                                <Setter Property="Margin" Value="4,4,75,0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ListBox.Style>
-
-                <i:Interaction.Behaviors>
-                    <utils:ScrollIntoViewForListBox />
-                </i:Interaction.Behaviors>
-
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <EventSetter Event="MouseDown" Handler="OnTabClicked" />
-                        <Setter Property="Padding" Value="5,2" />
-                        <Setter Property="Margin" Value="0,0,-1,0" />
-                        <Setter Property="BorderThickness" Value="1,1,1,0" />
-                        <Setter Property="BorderBrush" Value="#50000000" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListBoxItem">
-                                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
-                                            Padding="{TemplateBinding Control.Padding}"
-                                            BorderBrush="{TemplateBinding Border.BorderBrush}"
-                                            Background="{TemplateBinding Panel.Background}"
-                                            Name="Bd"
-                                            SnapsToDevicePixels="True">
-                                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
-                                                          ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
-                                                          ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
-                                                          HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
-                                                          VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
-                                                          SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="Selector.IsSelected" Value="False">
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="#20000000"/>
-                                            <Setter Property="Border.BorderBrush" TargetName="Bd">
-                                                <Setter.Value>
-                                                    <SolidColorBrush>#50000000</SolidColorBrush>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Trigger>
-                                        <Trigger Property="UIElement.IsMouseOver" Value="True">
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="Transparent"/>
-                                            <Setter Property="Border.BorderBrush" TargetName="Bd">
-                                                <Setter.Value>
-                                                    <SolidColorBrush>#90000000</SolidColorBrush>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Trigger>
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="Selector.IsSelectionActive" Value="False"/>
-                                                <Condition Property="Selector.IsSelected" Value="True"/>
-                                            </MultiTrigger.Conditions>
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
-                                            <Setter Property="Border.BorderBrush" TargetName="Bd">
-                                                <Setter.Value>
-                                                    <SolidColorBrush>#90000000</SolidColorBrush>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </MultiTrigger>
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="Selector.IsSelectionActive" Value="True"/>
-                                                <Condition Property="Selector.IsSelected" Value="True"/>
-                                            </MultiTrigger.Conditions>
-                                            <Setter Property="Panel.Background" TargetName="Bd" Value="#A0FFFFFF"/>
-                                            <Setter Property="Border.BorderBrush" TargetName="Bd">
-                                                <Setter.Value>
-                                                    <SolidColorBrush>#90000000</SolidColorBrush>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </MultiTrigger>
-                                        <Trigger Property="UIElement.IsEnabled" Value="False">
-                                            <Setter Property="TextElement.Foreground" TargetName="Bd">
-                                                <Setter.Value>
-                                                    <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-            </ListBox>
 
             <ItemsControl Grid.Row="1" Visibility="Hidden" ItemsSource="{Binding BackgroundLoading}">
                 <ItemsControl.ItemsPanel>

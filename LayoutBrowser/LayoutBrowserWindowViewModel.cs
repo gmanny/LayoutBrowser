@@ -524,6 +524,11 @@ namespace LayoutBrowser
         {
             await OnOpenNewWindow(currentTab, null, true);
         }
+
+        public void ToggleUi()
+        {
+            UiHidden = !UiHidden;
+        }
     }
 
     public class WindowTabItem : ObservableObject

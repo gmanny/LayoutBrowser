@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.Web.WebView2.Core;
 using WpfAppCommon;
 
 namespace LayoutBrowser
@@ -46,6 +48,7 @@ namespace LayoutBrowser
             AddShortcut(Key.N, ModifierKeys.Control, viewModel.OpenNewEmptyWindow);
             AddShortcut(Key.N, ModifierKeys.Control | ModifierKeys.Shift, viewModel.OpenNewEmptyWindow);
             AddShortcut(Key.T, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.ReopenLastClosedItem);
+            AddShortcut(Key.U, ModifierKeys.Control | ModifierKeys.Shift, viewModel.ToggleUi);
 
             Dispatcher.BeginInvoke(() =>
             {
@@ -80,6 +83,146 @@ namespace LayoutBrowser
         private void OnCloseClick(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            Win32MaximizeHelper.FixMaximize(this, resizeBorderMrg.Margin);
+        }
+    }
+
+    public static class Win32MaximizeHelper
+    {
+        // don't hide taskbar when maximized
+        // taken from http://www.abhisheksur.com/2010/09/taskbar-with-window-maximized-and.html
+        public static void FixMaximize(Window window, Thickness borderMargin)
+        { 
+            IntPtr handle = (new WindowInteropHelper(window)).Handle;
+            var hSource = HwndSource.FromHwnd(handle);
+
+            IntPtr WindowProc(
+                IntPtr hwnd,
+                int msg,
+                IntPtr wParam,
+                IntPtr lParam,
+                ref bool handled)
+            {
+                switch (msg)
+                {
+                    case 0x0024:
+                        WmGetMinMaxInfo(hwnd, lParam, borderMargin);
+                        handled = true;
+                        break;
+                }
+
+                return (IntPtr) 0;
+            }
+            
+            hSource.AddHook(WindowProc);
+        }
+
+        private static void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam, Thickness borderThickness)
+        {
+            MINMAXINFO mmi = (MINMAXINFO) Marshal.PtrToStructure(lParam, typeof(MINMAXINFO));
+
+            // Adjust the maximized size and position to fit the work area of the correct monitor
+            int MONITOR_DEFAULTTONEAREST =0x00000002;
+            var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+            Size topLeft = new Size(borderThickness.Left, borderThickness.Top),
+                 bottomRight = new Size(borderThickness.Right, borderThickness.Bottom);
+            /*using (*/var hSource = HwndSource.FromHwnd(hwnd);//)
+            {
+                Matrix transformToDevice = hSource.CompositionTarget.TransformToDevice;
+                topLeft = (Size)transformToDevice.Transform((Vector) topLeft);
+                bottomRight = (Size)transformToDevice.Transform((Vector) bottomRight);
+            }
+
+            if (monitor != IntPtr.Zero)
+            {
+                MONITORINFOEX monitorInfo = new MONITORINFOEX();
+                GetMonitorInfo(monitor, monitorInfo);
+                RECT rcWorkArea = monitorInfo.rcWork;
+                RECT rcMonitorArea = monitorInfo.rcMonitor;
+                mmi.ptMaxPosition.X = rcMonitorArea.left - rcWorkArea.left - (int) topLeft.Width;
+                mmi.ptMaxPosition.Y = rcMonitorArea.top - rcWorkArea.top - (int) topLeft.Height;
+                mmi.ptMaxSize.X = rcWorkArea.right - rcWorkArea.left + (int) topLeft.Width + (int) bottomRight.Width;
+                mmi.ptMaxSize.Y = rcWorkArea.bottom - rcWorkArea.top + (int) topLeft.Height + (int) bottomRight.Height;
+            }
+
+            Marshal.StructureToPtr(mmi, lParam, true);
+        }
+        
+        [DllImport("User32")]
+        internal static extern IntPtr MonitorFromWindow(IntPtr handle, int flags);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public POINT(int x, int y)
+            {
+                this.X = x;
+                this.Y = y;
+            }
+
+            public static implicit operator System.Drawing.Point(POINT p)
+            {
+                return new System.Drawing.Point(p.X, p.Y);
+            }
+
+            public static implicit operator POINT(System.Drawing.Point p)
+            {
+                return new POINT(p.X, p.Y);
+            }
+        }
+
+        // size of a device name string
+        private const int CCHDEVICENAME = 32;
+
+        [DllImport("User32.dll", CharSet=CharSet.Auto)] 
+        public static extern bool GetMonitorInfo(IntPtr hmonitor, [In, Out]MONITORINFOEX info);
+
+        [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Auto, Pack=4)]
+        public class MONITORINFOEX { 
+            public int     cbSize = Marshal.SizeOf(typeof(MONITORINFOEX));
+            public RECT    rcMonitor = new RECT(); 
+            public RECT    rcWork = new RECT(); 
+            public int     dwFlags = 0;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)] 
+            public char[]  szDevice = new char[32];
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINTSTRUCT { 
+            public int x;
+            public int y;
+            public POINTSTRUCT(int x, int y) {
+                this.x = x; 
+                this.y = y;
+            } 
+        } 
+
+        [StructLayout(LayoutKind.Sequential)] 
+        public struct RECT {
+            public int left; 
+            public int top; 
+            public int right;
+            public int bottom; 
         }
     }
 }
