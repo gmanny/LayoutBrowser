@@ -35,8 +35,52 @@
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
                 <DataTemplate DataType="{x:Type local:WindowTabItem}">
-                    <TextBlock Text="{Binding ViewModel.Title}" TextTrimming="CharacterEllipsis" MaxWidth="170"
-                               ToolTip="{Binding ViewModel.Title}" />
+                    <Grid MaxWidth="170">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=(utils:TextBlockService.IsTextTrimmed), ElementName=titleTextBlock}" Value="True">
+                                        <Setter Property="Width" Value="170" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+
+                        <Grid>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Margin" Value="8,2" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ViewModel.IsNavigating}" Value="True">
+                                            <Setter Property="Margin" Value="0,2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+
+                            <TextBlock x:Name="titleTextBlock" TextTrimming="CharacterEllipsis" utils:TextBlockService.AutomaticToolTipEnabled="True"
+                                       ToolTip="{Binding ViewModel.Title}" HorizontalAlignment="Left">
+                                <InlineUIContainer>
+                                    <InlineUIContainer.Child>
+                                        <Grid VerticalAlignment="Center" Width="15" Margin="0,-3,1,-3" Background="Transparent">
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ViewModel.IsNavigating}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                            <TextBlock Text="⋯" FontSize="12" Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <TextBlock Text="◯" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </InlineUIContainer.Child>
+                                </InlineUIContainer><Run Text="{Binding ViewModel.Title}" />
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
                 </DataTemplate>
             </Grid.Resources>
 
@@ -51,7 +95,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" FontSize="10" Text="{Binding CurrentTab.ViewModel.Title}" IsHitTestVisible="False" Margin="5,1,1,1">
+                <TextBlock Grid.Column="0" FontSize="10" TextTrimming="CharacterEllipsis" IsHitTestVisible="False" Margin="5,1,1,1">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -62,6 +106,25 @@
                             </Style.Triggers>
                         </Style>
                     </TextBlock.Style>
+
+                    <InlineUIContainer>
+                        <InlineUIContainer.Child>
+                            <Grid VerticalAlignment="Center" Width="15" Margin="0,-3,1,-3" Background="Transparent">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentTab.ViewModel.IsNavigating}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <TextBlock Text="⋯" FontSize="10" Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Text="◯" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                        </InlineUIContainer.Child>
+                    </InlineUIContainer><Run Text="{Binding CurrentTab.ViewModel.Title}" />
                 </TextBlock>
 
                 <Grid Grid.Column="0">
@@ -94,7 +157,7 @@
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <EventSetter Event="MouseDown" Handler="OnTabClicked" />
-                                <Setter Property="Padding" Value="5,2" />
+                                <Setter Property="Padding" Value="0" />
                                 <Setter Property="Margin" Value="0,0,-1,0" />
                                 <Setter Property="BorderThickness" Value="1,1,1,0" />
                                 <Setter Property="BorderBrush" Value="#50000000" />

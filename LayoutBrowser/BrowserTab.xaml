@@ -22,7 +22,43 @@
 
         <DockPanel Grid.Row="0" Visibility="{Binding ParentWindow.UiVisible, Converter={StaticResource BoolToVis}}">
             <Button DockPanel.Dock="Left" Command="{Binding RefreshBtnCommand}"
-                    Content="{Binding RefreshButtonText}" ToolTip="{Binding RefreshButtonHint}" Padding="0,-2,1,0" Width="20" FontSize="16" />
+                    ToolTip="{Binding RefreshButtonHint}"
+                    Padding="0" FontSize="16" VerticalContentAlignment="Stretch">
+                <Button.Resources>
+                    <Storyboard x:Key="LoadingPulse" RepeatBehavior="Forever">
+                        <ColorAnimation BeginTime="00:00:00.000"
+                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                        From="DeepSkyBlue"
+                                        To="LightBlue"
+                                        Duration="00:00:01.000" />
+                        <ColorAnimation BeginTime="00:00:01.000"
+                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                        To="DeepSkyBlue"
+                                        From="LightBlue"
+                                        Duration="0:0:1.00" />
+                    </Storyboard>
+                </Button.Resources>
+
+                <Button.Content>
+                    <Border Padding="0" Margin="0" Width="18" VerticalAlignment="Stretch" BorderThickness="0" Background="Transparent">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsNavigating}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Name="LoadingStart" Storyboard="{StaticResource LoadingPulse}"/>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <StopStoryboard BeginStoryboardName="LoadingStart" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Margin="0,-2,1,0" HorizontalAlignment="Center" Text="{Binding RefreshButtonText}" />
+                    </Border>
+                </Button.Content>
+            </Button>
 
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Width="20" FontSize="16" />
             <Button DockPanel.Dock="Right" ToolTip="Browser profile used for this tab" Margin="0,0,-1,0">

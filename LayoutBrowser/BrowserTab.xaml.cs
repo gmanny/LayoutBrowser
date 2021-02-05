@@ -25,12 +25,12 @@ namespace LayoutBrowser
 
         private void OnNavigationStarted(object? sender, CoreWebView2NavigationStartingEventArgs e)
         {
-            viewModel.NavigationStarted(e);
+            viewModel.OnNavigationStarted(e);
         }
 
         private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            viewModel.NavigationCompleted(e);
+            viewModel.OnNavigationCompleted(e);
         }
 
         public void Dispose()

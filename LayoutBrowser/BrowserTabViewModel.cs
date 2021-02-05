@@ -249,14 +249,18 @@ namespace LayoutBrowser
             Title = webView.CoreWebView2.DocumentTitle;
         }
 
-        public void NavigationStarted(CoreWebView2NavigationStartingEventArgs e)
+        public void OnNavigationStarted(CoreWebView2NavigationStartingEventArgs e)
         {
             IsNavigating = true;
         }
 
-        public void NavigationCompleted(CoreWebView2NavigationCompletedEventArgs e)
+        public event Action<BrowserTabViewModel> NavigationCompleted;
+
+        public void OnNavigationCompleted(CoreWebView2NavigationCompletedEventArgs e)
         {
             IsNavigating = false;
+
+            NavigationCompleted?.Invoke(this);
         }
 
         public event Action<ProfileItem> NewProfileSelected;

@@ -35,6 +35,7 @@ namespace LayoutBrowser
         private WindowTabItem currentTab;
         private bool showTabBar;
         private bool uiHidden;
+        private bool backgroundLoadEnabled;
 
         public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
         {
@@ -61,7 +62,19 @@ namespace LayoutBrowser
             if (tabs.NonEmpty())
             {
                 CurrentTab = model.activeTabIndex >= 0 && model.activeTabIndex < tabs.Count ? tabs[model.activeTabIndex] : tabs[0];
+                CurrentTab.ViewModel.NavigationCompleted += OnFirstNavComplete;
             }
+            else
+            {
+                BackgroundLoadEnabled = true;
+            }
+        }
+
+        private void OnFirstNavComplete(BrowserTabViewModel vm)
+        {
+            BackgroundLoadEnabled = true;
+
+            vm.NavigationCompleted -= OnFirstNavComplete;
         }
 
         public Guid Id => id;
@@ -230,7 +243,17 @@ namespace LayoutBrowser
         };
 
         public ObservableCollection<WindowTabItem> Tabs => tabs;
-        public ObservableCollection<WindowTabItem> BackgroundLoading => backgroundLoading;
+        public ObservableCollection<WindowTabItem> BackgroundLoading => backgroundLoadEnabled ? backgroundLoading : null;
+
+        public bool BackgroundLoadEnabled
+        {
+            get => backgroundLoadEnabled;
+            set
+            {
+                SetProperty(ref backgroundLoadEnabled, value);
+                OnPropertyChanged(nameof(BackgroundLoading));
+            }
+        }
 
         public WindowTabItem CurrentTab
         {
@@ -238,6 +261,11 @@ namespace LayoutBrowser
             set
             {
                 backgroundLoading.Remove(value);
+
+                if (currentTab != null)
+                {
+                    BackgroundLoadEnabled = true;
+                }
 
                 SetProperty(ref currentTab, value);
 
