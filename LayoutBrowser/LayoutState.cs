@@ -33,7 +33,8 @@ namespace LayoutBrowser
 
         public double zoomFactor = 1;
 
-        public TimeSpan? autoRefresh;
+        public bool autoRefreshEnabled;
+        public TimeSpan autoRefreshTime = TimeSpan.Zero;
     }
 
     public class ClosedItemHistory

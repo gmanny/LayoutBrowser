@@ -14,12 +14,15 @@ namespace LayoutBrowser
             // UI
             Bind<App>().ToSelf().InSingletonScope();
             Bind<AppUnhandledExceptionSvc>().ToSelf().AsEagerSingleton();
+            Bind<AutoRefreshGlobalOneSecondTimer>().ToSelf().InSingletonScope();
 
             // -> windows
             Bind<BrowserTab>().ToSelf();
             Bind<IBrowserTabFactory>().ToFactory();
             Bind<ProfileListViewModel>().ToSelf();
             Bind<IProfileListViewModelFactory>().ToFactory();
+            Bind<AutoRefreshSettingsViewModel>().ToSelf();
+            Bind<IAutoRefreshSettingsViewModelFactory>().ToFactory();
             Bind<BrowserTabViewModel>().ToSelf();
             Bind<IBrowserTabViewModelFactory>().ToFactory();
 
