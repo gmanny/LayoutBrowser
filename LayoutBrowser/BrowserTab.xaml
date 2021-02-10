@@ -7,6 +7,7 @@
              xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
              xmlns:utils="clr-namespace:WpfAppCommon.Utils;assembly=WpfAppCommon"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
@@ -60,9 +61,121 @@
                 </Button.Content>
             </Button>
 
+            <Button DockPanel.Dock="Right" Margin="0,0,0,0">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="ToolTip" Value="Settings for page auto-refresh" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding AutoRefresh.AutoRefreshEnabled}" Value="True">
+                                <Setter Property="ToolTip" Value="Time till next page auto-refresh (format: [d.]hh:mm:ss)" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <Grid>
+                            <TextBlock Text="↻" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AutoRefresh.RefreshTriggered}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Auto ↻" />
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AutoRefresh.RefreshTriggered}" Value="True">
+                                                <Setter Property="Visibility" Value="Hidden" />
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding AutoRefresh.AutoRefreshEnabled}" Value="True" />
+                                                    <Condition Binding="{Binding AutoRefresh.ShowDateInSpanStart}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+
+                                                <Setter Property="Text" Value="{Binding AutoRefresh.TillNextRefresh, StringFormat='{}{0:hh\\:mm\\:ss}'}" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding AutoRefresh.AutoRefreshEnabled}" Value="True" />
+                                                    <Condition Binding="{Binding AutoRefresh.ShowDateInSpanStart}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+
+                                                <Setter Property="Text" Value="{Binding AutoRefresh.TillNextRefresh, StringFormat='{}{0:d\\.hh\\:mm\\:ss}'}" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Path Margin="2" VerticalAlignment="Center" Width="6" Fill="Black" Stretch="Uniform" HorizontalAlignment="Right" Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z "/>
+                    </StackPanel>
+                </Button.Content>
+
+                <i:Interaction.Behaviors>
+                    <utils:DropDownButtonBehavior />
+                </i:Interaction.Behaviors>
+
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Auto-refresh enabled" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding AutoRefresh.AutoRefreshEnabled, Mode=TwoWay}" />
+                        <MenuItem StaysOpenOnClick="True">
+                            <MenuItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Interval:</TextBlock>
+                                    <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" TextAlignment="Right" Value="{Binding AutoRefresh.AutoRefreshSpan}" Minimum="00:00:01"
+                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" ToolTip="Interval between page auto-refreshes (format: HH:mm:ss, hours can be grater than 24)" />
+                                </StackPanel>
+                            </MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem StaysOpenOnClick="True">
+                            <MenuItem.Style>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AutoRefresh.AutoRefreshEnabled}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </MenuItem.Style>
+
+                            <MenuItem.Header>
+                                <TextBlock>
+                                    <Run>Since</Run>
+                                    <Run>
+                                        <Run.Style>
+                                            <Style TargetType="Run">
+                                                <Setter Property="Text" Value="{Binding AutoRefresh.RefreshSpanStart, StringFormat='T'}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AutoRefresh.ShowDateInSpanStart}" Value="True">
+                                                        <Setter Property="Text" Value="{Binding AutoRefresh.RefreshSpanStart, StringFormat='G'}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Run.Style>
+                                    </Run>
+                                </TextBlock>
+                            </MenuItem.Header>
+                        </MenuItem>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+
             <Button DockPanel.Dock="Right" ToolTip="Browser profile used for this tab" Margin="0,0,-1,0">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
+                        <TextBlock>👤</TextBlock>
                         <TextBlock Text="{Binding Profile.Caption}" />
                         <Path Margin="2" VerticalAlignment="Center" Width="6" Fill="Black" Stretch="Uniform" HorizontalAlignment="Right" Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z "/>
                     </StackPanel>

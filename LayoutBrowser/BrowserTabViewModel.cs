@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Input;
+using System.Windows.Threading;
 using LanguageExt;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
@@ -19,13 +22,12 @@ namespace LayoutBrowser
 
     public class BrowserTabViewModel : ObservableObject
     {
-        private readonly LayoutWindowTab model;
         private readonly LayoutBrowserWindowViewModel parentWindow;
-        private readonly ProfileManager profileManager;
         private readonly ILogger logger;
         
         private readonly ProfileItem profile;
         private readonly ProfileListViewModel profileList;
+        private readonly AutoRefreshSettingsViewModel autoRefresh;
 
         private readonly CoreWebView2CreationProperties creationArgs;
 
@@ -40,12 +42,13 @@ namespace LayoutBrowser
         private string title;
         private double zoomFactor;
 
+        private TaskCompletionSource<Unit> refreshComplete;
+
         public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow,
-            ProfileManager profileManager, IProfileListViewModelFactory profileListFactory, ILogger logger)
+            ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
+            IAutoRefreshSettingsViewModelFactory autoRefreshFactory, ILogger logger)
         {
-            this.model = model;
             this.parentWindow = parentWindow;
-            this.profileManager = profileManager;
             this.logger = logger;
 
             Option<ProfileItem> pf = profileManager.Profiles.Find(p => p.Name == model.profile);
@@ -56,6 +59,8 @@ namespace LayoutBrowser
             profile = pf.Get();
 
             profileList = profileListFactory.ForOwnerTab(this);
+
+            autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, OnAutoRefresh);
 
             zoomFactor = model.zoomFactor;
             title = model.title;
@@ -72,11 +77,33 @@ namespace LayoutBrowser
             browserSource = model.url.IsNullOrEmpty() ? null : new Uri(model.url);
         }
 
+        private async Task OnAutoRefresh()
+        {
+            if (webView == null)
+            {
+                return;
+            }
+
+            TaskCompletionSource<Unit> newComplete = new TaskCompletionSource<Unit>();
+            TaskCompletionSource<Unit> oldComplete = Interlocked.Exchange(ref refreshComplete, newComplete);
+            oldComplete?.TrySetResult(Unit.Default);
+
+            await webView.Dispatcher.BeginInvoke(async () =>
+            {
+                await webView.EnsureCoreWebView2Async();
+
+                webView.Reload();
+            }, DispatcherPriority.Background);
+            
+            await newComplete.Task;
+        }
+
         public ICommand RefreshBtnCommand => refreshBtnCommand;
         public ICommand GoBtnCommand => goBtnCommand;
 
         public ProfileItem Profile => profile;
         public ProfileListViewModel ProfileList => profileList;
+        public AutoRefreshSettingsViewModel AutoRefresh => autoRefresh;
 
         public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 
@@ -85,7 +112,9 @@ namespace LayoutBrowser
             url = browserSource.ToString(),
             title = title,
             profile = profile.Name,
-            zoomFactor = zoomFactor
+            zoomFactor = zoomFactor,
+            autoRefreshEnabled = autoRefresh.AutoRefreshEnabled,
+            autoRefreshTime = autoRefresh.AutoRefreshSpan
         };
 
         private void ExecuteRefresh()
@@ -169,6 +198,11 @@ namespace LayoutBrowser
 
                 RefreshButtonText = value ? "✕" : "↻";
                 RefreshButtonHint = value ? "Stop loading (Esc)" : "Refresh (F5)";
+
+                if (!value)
+                {
+                    refreshComplete?.TrySetResult(Unit.Default);
+                }
             }
         }
 
