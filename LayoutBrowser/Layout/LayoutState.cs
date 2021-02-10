@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Layout
 {
     public class LayoutState
     {
@@ -35,6 +35,9 @@ namespace LayoutBrowser
 
         public bool autoRefreshEnabled;
         public TimeSpan autoRefreshTime = TimeSpan.Zero;
+
+        public double scrollX, scrollY;
+        public TimeSpan scrollDelay = TimeSpan.Zero;
     }
 
     public class ClosedItemHistory

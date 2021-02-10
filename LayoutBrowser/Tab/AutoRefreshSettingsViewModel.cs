@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MvvmHelpers;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Tab
 {
     public interface IAutoRefreshSettingsViewModelFactory
     {

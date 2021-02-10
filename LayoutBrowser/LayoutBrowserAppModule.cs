@@ -1,4 +1,7 @@
-﻿using Monitor.ServiceCommon.Services.DiEager;
+﻿using LayoutBrowser.Layout;
+using LayoutBrowser.Tab;
+using LayoutBrowser.Window;
+using Monitor.ServiceCommon.Services.DiEager;
 using Ninject.Extensions.Factory;
 using Ninject.Modules;
 
@@ -16,6 +19,9 @@ namespace LayoutBrowser
             Bind<AppUnhandledExceptionSvc>().ToSelf().AsEagerSingleton();
             Bind<AutoRefreshGlobalOneSecondTimer>().ToSelf().InSingletonScope();
 
+            Bind<WebView2MessagingService>().ToSelf();
+            Bind<IWebView2MessagingServiceFactory>().ToFactory();
+
             // -> windows
             Bind<BrowserTab>().ToSelf();
             Bind<IBrowserTabFactory>().ToFactory();
@@ -23,6 +29,8 @@ namespace LayoutBrowser
             Bind<IProfileListViewModelFactory>().ToFactory();
             Bind<AutoRefreshSettingsViewModel>().ToSelf();
             Bind<IAutoRefreshSettingsViewModelFactory>().ToFactory();
+            Bind<ScrollRestoreViewModel>().ToSelf();
+            Bind<IScrollRestoreViewModelFactory>().ToFactory();
             Bind<BrowserTabViewModel>().ToSelf();
             Bind<IBrowserTabViewModelFactory>().ToFactory();
 

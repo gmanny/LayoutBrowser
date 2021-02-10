@@ -6,10 +6,11 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using LayoutBrowser.Layout;
 using Microsoft.Extensions.Logging;
 using WpfAppCommon;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Window
 {
     public interface ILayoutBrowserWindowFactory
     {
@@ -97,7 +98,7 @@ namespace LayoutBrowser
     {
         // don't hide taskbar when maximized
         // taken from http://www.abhisheksur.com/2010/09/taskbar-with-window-maximized-and.html
-        public static void FixMaximize(Window window, Thickness borderMargin)
+        public static void FixMaximize(System.Windows.Window window, Thickness borderMargin)
         { 
             IntPtr handle = (new WindowInteropHelper(window)).Handle;
             var hSource = HwndSource.FromHwnd(handle);

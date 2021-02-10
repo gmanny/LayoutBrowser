@@ -8,7 +8,7 @@ using MonitorCommon;
 using MvvmHelpers;
 using Newtonsoft.Json;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Layout
 {
     // don't know, if such a fancy class is needed for essentially managing a list of strings, but
     // it can be useful for cleanup in future

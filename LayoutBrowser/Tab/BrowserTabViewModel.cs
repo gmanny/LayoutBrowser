@@ -6,6 +6,8 @@ using System.Web;
 using System.Windows.Input;
 using System.Windows.Threading;
 using LanguageExt;
+using LayoutBrowser.Layout;
+using LayoutBrowser.Window;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -13,43 +15,51 @@ using MonitorCommon;
 using MvvmHelpers;
 using WpfAppCommon;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Tab
 {
     public interface IBrowserTabViewModelFactory
     {
         public BrowserTabViewModel ForModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow);
     }
 
-    public class BrowserTabViewModel : ObservableObject
+    public class BrowserTabViewModel : ObservableObject, IDisposable
     {
         private readonly LayoutBrowserWindowViewModel parentWindow;
+        private readonly IWebView2MessagingServiceFactory messengerFactory;
         private readonly ILogger logger;
         
         private readonly ProfileItem profile;
         private readonly ProfileListViewModel profileList;
         private readonly AutoRefreshSettingsViewModel autoRefresh;
-
+        private readonly ScrollRestoreViewModel scrollRestore;
+        
         private readonly CoreWebView2CreationProperties creationArgs;
 
         private readonly ICommand refreshBtnCommand;
         private readonly ICommand goBtnCommand;
-        
+
+        private WebView2 webView;
+        private WebView2MessagingService messenger;
+
+        private bool browserSourceExposed;
         private Uri browserSource;
         private string url;
         private bool isNavigating;
         private string refreshButtonText = "↻", refreshButtonHint = "Refresh (F5)";
-        private WebView2 webView;
+        
         private string title;
         private double zoomFactor;
 
         private TaskCompletionSource<Unit> refreshComplete;
 
-        public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow,
-            ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
-            IAutoRefreshSettingsViewModelFactory autoRefreshFactory, ILogger logger)
+        public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
+            IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory, ILogger logger)
         {
             this.parentWindow = parentWindow;
+            this.messengerFactory = messengerFactory;
             this.logger = logger;
+
+            scrollRestore = scrollFactory.ForTab(model);
 
             Option<ProfileItem> pf = profileManager.Profiles.Find(p => p.Name == model.profile);
             if (pf.IsNone)
@@ -88,12 +98,7 @@ namespace LayoutBrowser
             TaskCompletionSource<Unit> oldComplete = Interlocked.Exchange(ref refreshComplete, newComplete);
             oldComplete?.TrySetResult(Unit.Default);
 
-            await webView.Dispatcher.BeginInvoke(async () =>
-            {
-                await webView.EnsureCoreWebView2Async();
-
-                webView.Reload();
-            }, DispatcherPriority.Background);
+            await webView.Dispatcher.BeginInvoke(Refresh, DispatcherPriority.Background);
             
             await newComplete.Task;
         }
@@ -114,8 +119,20 @@ namespace LayoutBrowser
             profile = profile.Name,
             zoomFactor = zoomFactor,
             autoRefreshEnabled = autoRefresh.AutoRefreshEnabled,
-            autoRefreshTime = autoRefresh.AutoRefreshSpan
+            autoRefreshTime = autoRefresh.AutoRefreshSpan,
+            scrollDelay = scrollRestore.ScrollDelay,
+            scrollX = scrollRestore.LastScroll.X,
+            scrollY = scrollRestore.LastScroll.Y
         };
+
+        public async void Refresh()
+        {
+            scrollRestore.RememberScroll();
+
+            await webView.EnsureCoreWebView2Async();
+
+            webView.Reload();
+        }
 
         private void ExecuteRefresh()
         {
@@ -125,7 +142,7 @@ namespace LayoutBrowser
             }
             else
             {
-                webView.Reload();
+                Refresh();
             }
         }
 
@@ -151,11 +168,24 @@ namespace LayoutBrowser
 
         public CoreWebView2CreationProperties CreationProperties => creationArgs;
 
+        private void ExposeBrowserSource()
+        {
+            browserSourceExposed = true;
+
+            OnPropertyChanged(nameof(BrowserSource));
+        }
+
         public Uri BrowserSource
         {
-            get => browserSource;
+            get => browserSourceExposed ? browserSource : null;
             set
             {
+                if (!browserSourceExposed)
+                {
+                    OnPropertyChanged();
+                    return;
+                }
+
                 SetProperty(ref browserSource, value);
 
                 logger.LogDebug($"Source changed to {value}");
@@ -194,12 +224,14 @@ namespace LayoutBrowser
             get => isNavigating;
             set
             {
+                bool stopped = isNavigating && !value;
+
                 SetProperty(ref isNavigating, value);
 
                 RefreshButtonText = value ? "✕" : "↻";
                 RefreshButtonHint = value ? "Stop loading (Esc)" : "Refresh (F5)";
 
-                if (!value)
+                if (stopped)
                 {
                     refreshComplete?.TrySetResult(Unit.Default);
                 }
@@ -246,15 +278,19 @@ namespace LayoutBrowser
         {
             await wv.EnsureCoreWebView2Async();
 
-            logger.LogDebug($"WebView2 core initialized");
+            messenger = messengerFactory.ForWebView2(wv);
 
             OnControlInitialized();
+
+            await scrollRestore.PlugIntoWebView(wv, messenger);
 
             Title = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
 
             wv.CoreWebView2.WindowCloseRequested += OnCloseRequested;
             wv.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
+
+            ExposeBrowserSource();
         }
 
         public event Action<BrowserTabViewModel, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
@@ -302,6 +338,12 @@ namespace LayoutBrowser
         public void OnNewProfileSelected(ProfileItem piModel)
         {
             NewProfileSelected?.Invoke(piModel);
+        }
+
+        public void Dispose()
+        {
+            autoRefresh.Dispose();
+            messenger?.Dispose();
         }
     }
 }

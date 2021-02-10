@@ -5,14 +5,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Castle.Core.Internal;
-using LanguageExt;
-using Microsoft.VisualBasic;
+using LayoutBrowser.Layout;
 using MvvmHelpers;
 using WpfAppCommon;
 using WpfAppCommon.CollectionSegmenting;
 using WpfAppCommon.Prompt;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Tab
 {
     public interface IProfileListViewModelFactory
     {

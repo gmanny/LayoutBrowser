@@ -8,12 +8,14 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using LanguageExt;
+using LayoutBrowser.Layout;
+using LayoutBrowser.Tab;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using MonitorCommon;
 using MvvmHelpers;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Window
 {
     public interface ILayoutBrowserWindowViewModelFactory
     {
@@ -505,7 +507,7 @@ namespace LayoutBrowser
 
         public void Refresh()
         {
-            currentTab?.Control.webView.Reload();
+            currentTab?.ViewModel.Refresh();
         }
 
         public void FocusAddressBar()
@@ -584,6 +586,7 @@ namespace LayoutBrowser
 
         public void Dispose()
         {
+            ViewModel.Dispose();
             Control.Dispose();
         }
     }

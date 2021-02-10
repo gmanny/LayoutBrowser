@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using LayoutBrowser.Window;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Monitor.ServiceCommon.Services;
@@ -12,7 +13,7 @@ using Monitor.ServiceCommon.Util;
 using MonitorCommon;
 using Newtonsoft.Json;
 
-namespace LayoutBrowser
+namespace LayoutBrowser.Layout
 {
     public class LayoutManager
     {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using LayoutBrowser.Layout;
+using LayoutBrowser.Window;
 using Ninject;
 using Ninject.Modules;
 using WpfAppCommon;
