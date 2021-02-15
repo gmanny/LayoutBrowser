@@ -31,7 +31,7 @@
             </Style>
         </Grid.Style>
 
-        <Grid WindowChrome.IsHitTestVisibleInChrome="True">
+        <Grid WindowChrome.IsHitTestVisibleInChrome="True" x:Name="inGrid">
             <Grid.Resources>
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
 

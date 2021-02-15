@@ -63,7 +63,27 @@
                 </Button.Content>
             </Button>
 
-            <Button DockPanel.Dock="Right" Margin="0,0,0,0">
+            <Button DockPanel.Dock="Right" Margin="0,0,0,0" ToolTip="Additional settings" Content="⋮" Width="20" x:Name="menuButton">
+                <i:Interaction.Behaviors>
+                    <utils:DropDownButtonBehavior />
+                </i:Interaction.Behaviors>
+
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem StaysOpenOnClick="True">
+                            <MenuItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Scroll restore delay:</TextBlock>
+                                    <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" FractionalSecondsDigitsCount="3" TextAlignment="Right" Value="{Binding ScrollRestore.ScrollDelay}" Minimum="00:00:00"
+                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for pages where content is loaded by the page after it's loaded." />
+                                </StackPanel>
+                            </MenuItem.Header>
+                        </MenuItem>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+
+            <Button DockPanel.Dock="Right" Margin="0,0,-1,0">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="ToolTip" Value="Settings for page auto-refresh" />

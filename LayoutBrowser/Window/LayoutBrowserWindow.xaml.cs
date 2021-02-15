@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,6 +56,36 @@ namespace LayoutBrowser.Window
             {
                 tabBar.ScrollIntoView(viewModel.CurrentTab);
             }, DispatcherPriority.Background);
+        }
+
+        protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+        {
+            base.OnDpiChanged(oldDpi, newDpi);
+
+            logger.LogDebug($"Window DPI changed x:{oldDpi.DpiScaleX}/y:{oldDpi.DpiScaleY} -> x:{newDpi.DpiScaleX}/y:{newDpi.DpiScaleY}");
+
+            WiggleBrowser();
+        }
+
+        private async void WiggleBrowser(int step = 1)
+        {
+            if (step > 10)
+            {
+                return;
+            }
+
+            if (step % 2 == 1)
+            {
+                inGrid.Margin = new Thickness(0, 0, 0, -1);
+            }
+            else
+            {
+                inGrid.Margin = new Thickness(0, 0, 0, 0);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+
+            await Dispatcher.BeginInvoke(() => WiggleBrowser(step + 1), DispatcherPriority.Background);
         }
 
         public LayoutBrowserWindowViewModel ViewModel => viewModel;

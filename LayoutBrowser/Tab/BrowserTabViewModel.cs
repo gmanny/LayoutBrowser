@@ -109,6 +109,7 @@ namespace LayoutBrowser.Tab
         public ProfileItem Profile => profile;
         public ProfileListViewModel ProfileList => profileList;
         public AutoRefreshSettingsViewModel AutoRefresh => autoRefresh;
+        public ScrollRestoreViewModel ScrollRestore => scrollRestore;
 
         public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 
