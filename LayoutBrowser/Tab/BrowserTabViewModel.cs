@@ -26,6 +26,7 @@ namespace LayoutBrowser.Tab
     {
         private readonly LayoutBrowserWindowViewModel parentWindow;
         private readonly IWebView2MessagingServiceFactory messengerFactory;
+        private readonly LayoutManagerViewModel layoutManagerVm;
         private readonly ILogger logger;
         
         private readonly ProfileItem profile;
@@ -53,10 +54,12 @@ namespace LayoutBrowser.Tab
         private TaskCompletionSource<Unit> refreshComplete;
 
         public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
-            IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory, ILogger logger)
+            IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory,
+            LayoutManagerViewModel layoutManagerVm, ILogger logger)
         {
             this.parentWindow = parentWindow;
             this.messengerFactory = messengerFactory;
+            this.layoutManagerVm = layoutManagerVm;
             this.logger = logger;
 
             scrollRestore = scrollFactory.ForTab(model);
@@ -110,6 +113,8 @@ namespace LayoutBrowser.Tab
         public ProfileListViewModel ProfileList => profileList;
         public AutoRefreshSettingsViewModel AutoRefresh => autoRefresh;
         public ScrollRestoreViewModel ScrollRestore => scrollRestore;
+
+        public LayoutManagerViewModel LayoutMgr => layoutManagerVm;
 
         public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 

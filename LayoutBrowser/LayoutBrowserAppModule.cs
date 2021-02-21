@@ -22,6 +22,8 @@ namespace LayoutBrowser
             Bind<WebView2MessagingService>().ToSelf();
             Bind<IWebView2MessagingServiceFactory>().ToFactory();
 
+            Bind<LayoutManagerViewModel>().ToSelf().InSingletonScope();
+
             // -> windows
             Bind<BrowserTab>().ToSelf();
             Bind<IBrowserTabFactory>().ToFactory();

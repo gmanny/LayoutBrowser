@@ -70,15 +70,21 @@
 
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem StaysOpenOnClick="True">
+                        <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
+                        <MenuItem StaysOpenOnClick="True" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for pages where content is loaded by the page after it's loaded.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Scroll restore delay:</TextBlock>
                                     <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" FractionalSecondsDigitsCount="3" TextAlignment="Right" Value="{Binding ScrollRestore.ScrollDelay}" Minimum="00:00:00"
-                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for pages where content is loaded by the page after it's loaded." />
+                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
+
+                        <Separator />
+                        <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
+                        <MenuItem Header="Window order locked" IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
+                        <MenuItem Header="Maintain order with ToBack" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>

@@ -293,6 +293,7 @@ namespace LayoutBrowser.Window
                             {
                                 value.Control.webView.Focus();
                             }
+                            // ReSharper disable once EmptyGeneralCatchClause
                             catch { }
                         }, DispatcherPriority.Background);
                     }

@@ -236,7 +236,7 @@
                 </Grid>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ToggleButton IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" IsTabStop="True" ToolTip="Toggle UI visibility (Ctrl+Shift+U)">
+                    <ToggleButton x:Name="uiHideBtn" IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Toggle UI visibility (Ctrl+Shift+U)">
                         <ToggleButton.Style>
                             <Style TargetType="ToggleButton">
                                 <Setter Property="Template">

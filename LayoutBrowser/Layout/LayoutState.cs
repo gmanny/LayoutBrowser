@@ -7,6 +7,9 @@ namespace LayoutBrowser.Layout
     public class LayoutState
     {
         public List<LayoutWindow> windows = new List<LayoutWindow>();
+
+        public bool locked;
+        public bool restoreUsingToBack;
     }
 
     public class LayoutWindow

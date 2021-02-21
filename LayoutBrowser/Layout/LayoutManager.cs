@@ -28,6 +28,8 @@ namespace LayoutBrowser.Layout
 
         private ClosedItemHistory closedItems;
 
+        private bool layoutLocked;
+        private bool layoutRestoreUsingToBack;
         private bool stopping;
 
         public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, JsonSerializerSvc serSvc, ProcessLifetimeSvc lifetimeSvc, ILogger logger)
@@ -39,6 +41,18 @@ namespace LayoutBrowser.Layout
             ser = serSvc.Serializer;
 
             lifetimeSvc.ApplicationStop += OnAppStop;
+        }
+
+        public bool LayoutLocked
+        {
+            get => layoutLocked;
+            set => layoutLocked = value;
+        }
+
+        public bool LayoutRestoreUsingToBack
+        {
+            get => layoutRestoreUsingToBack;
+            set => layoutRestoreUsingToBack = value;
         }
 
         private async Task OnAppStop()
@@ -69,7 +83,7 @@ namespace LayoutBrowser.Layout
             if (state.windows.Count == 1 && state.windows[0].tabs.IsEmpty())
             {
                 state.windows[0].tabs.Add(
-                    new LayoutWindowTab { url = "https://duck.com" }
+                    new LayoutWindowTab { }
                 );
             }
 
@@ -80,7 +94,9 @@ namespace LayoutBrowser.Layout
         {
             LayoutState state = new LayoutState
             {
-                windows = windows.Select(w => w.ViewModel.ToModel()).ToList()
+                windows = windows.Select(w => w.ViewModel.ToModel()).ToList(),
+                locked = layoutLocked,
+                restoreUsingToBack = layoutRestoreUsingToBack
             };
 
             Settings.Default.Layout = ser.Serialize(state);
@@ -110,8 +126,11 @@ namespace LayoutBrowser.Layout
 
                 logger.LogInformation($"Restored window {window.id}");
             }
-        }
 
+            LayoutLocked = state.locked;
+            LayoutRestoreUsingToBack = state.restoreUsingToBack;
+        }
+        
         public WindowItem AddWindow(LayoutWindow window, bool noActivation = false)
         {
             LayoutBrowserWindowViewModel vm = viewModelFactory.ForModel(window);
@@ -140,6 +159,48 @@ namespace LayoutBrowser.Layout
             w.Show();
 
             return item;
+        }
+        
+        private void RestoreWindowOrder(WindowItem item)
+        {
+            int index = windows.IndexOf(item);
+            if (index < 0)
+            {
+                return;
+            }
+
+            void RestoreLayoutFront()
+            {
+                for (int i = windows.Count - 1; i >= 0; i--)
+                {
+                    windows[i].Window.BringToFrontWithoutFocus();
+                }
+            }
+
+            void RestoreLayoutBack()
+            {
+                for (int i = 0; i < windows.Count; i++)
+                {
+                    windows[i].Window.BringToBack();
+                }
+            }
+
+            void RestoreLayoutGen()
+            {
+                if (layoutRestoreUsingToBack)
+                {
+                    RestoreLayoutBack();
+                }
+                else
+                {
+                    RestoreLayoutFront();
+                }
+            }
+
+            RestoreLayoutGen();
+
+            // repeat after delay because it sometimes bugs out :\
+            windows[index].Window.Dispatcher.BeginInvoke(RestoreLayoutGen, DispatcherPriority.Background);
         }
 
         private void OnWindowTabClosed(LayoutBrowserWindowViewModel wnd, WindowTabItem tab, int tabIndex)
@@ -247,6 +308,12 @@ namespace LayoutBrowser.Layout
 
         private void OnActivated(WindowItem item, EventArgs e)
         {
+            if (layoutLocked)
+            {
+                RestoreWindowOrder(item);
+                return;
+            }
+
             int index = windows.IndexOf(item);
             if (index == 0)
             {
