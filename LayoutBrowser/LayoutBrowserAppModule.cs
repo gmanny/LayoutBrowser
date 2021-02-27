@@ -31,6 +31,8 @@ namespace LayoutBrowser
             Bind<IProfileListViewModelFactory>().ToFactory();
             Bind<AutoRefreshSettingsViewModel>().ToSelf();
             Bind<IAutoRefreshSettingsViewModelFactory>().ToFactory();
+            Bind<NegativeMarginViewModel>().ToSelf();
+            Bind<INegativeMarginViewModelFactory>().ToFactory();
             Bind<ScrollRestoreViewModel>().ToSelf();
             Bind<IScrollRestoreViewModelFactory>().ToFactory();
             Bind<BrowserTabViewModel>().ToSelf();

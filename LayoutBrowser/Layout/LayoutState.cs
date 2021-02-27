@@ -41,6 +41,14 @@ namespace LayoutBrowser.Layout
 
         public double scrollX, scrollY;
         public TimeSpan scrollDelay = TimeSpan.Zero;
+
+        public TabNegativeMargin negativeMargin;
+    }
+
+    public class TabNegativeMargin
+    {
+        public double left, top, right, bottom;
+        public bool leftRightNativeMode;
     }
 
     public class ClosedItemHistory

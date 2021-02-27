@@ -33,6 +33,7 @@ namespace LayoutBrowser.Tab
         private readonly ProfileListViewModel profileList;
         private readonly AutoRefreshSettingsViewModel autoRefresh;
         private readonly ScrollRestoreViewModel scrollRestore;
+        private readonly NegativeMarginViewModel negativeMargin;
         
         private readonly CoreWebView2CreationProperties creationArgs;
 
@@ -55,7 +56,7 @@ namespace LayoutBrowser.Tab
 
         public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
             IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory,
-            LayoutManagerViewModel layoutManagerVm, ILogger logger)
+            LayoutManagerViewModel layoutManagerVm, INegativeMarginViewModelFactory negativeMarginFactory, ILogger logger)
         {
             this.parentWindow = parentWindow;
             this.messengerFactory = messengerFactory;
@@ -63,6 +64,7 @@ namespace LayoutBrowser.Tab
             this.logger = logger;
 
             scrollRestore = scrollFactory.ForTab(model);
+            negativeMargin = negativeMarginFactory.ForModel(model.negativeMargin ?? new TabNegativeMargin());
 
             Option<ProfileItem> pf = profileManager.Profiles.Find(p => p.Name == model.profile);
             if (pf.IsNone)
@@ -113,6 +115,7 @@ namespace LayoutBrowser.Tab
         public ProfileListViewModel ProfileList => profileList;
         public AutoRefreshSettingsViewModel AutoRefresh => autoRefresh;
         public ScrollRestoreViewModel ScrollRestore => scrollRestore;
+        public NegativeMarginViewModel NegativeMargin => negativeMargin;
 
         public LayoutManagerViewModel LayoutMgr => layoutManagerVm;
 
@@ -128,7 +131,8 @@ namespace LayoutBrowser.Tab
             autoRefreshTime = autoRefresh.AutoRefreshSpan,
             scrollDelay = scrollRestore.ScrollDelay,
             scrollX = scrollRestore.LastScroll.X,
-            scrollY = scrollRestore.LastScroll.Y
+            scrollY = scrollRestore.LastScroll.Y,
+            negativeMargin = negativeMargin.ToModel()
         };
 
         public async void Refresh()
@@ -289,6 +293,7 @@ namespace LayoutBrowser.Tab
             OnControlInitialized();
 
             await scrollRestore.PlugIntoWebView(wv, messenger);
+            await negativeMargin.PlugIntoWebView(wv, messenger);
 
             Title = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;

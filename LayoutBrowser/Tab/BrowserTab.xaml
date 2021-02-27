@@ -16,6 +16,8 @@
     <Grid>
         <Grid.Resources>
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+            <utils:WidthToThicknessConverter x:Key="BottomNegativeThicknessConv" Side="Bottom" Invert="True" />
         </Grid.Resources>
 
         <Grid.RowDefinitions>
@@ -71,7 +73,7 @@
                 <Button.ContextMenu>
                     <ContextMenu>
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
-                        <MenuItem StaysOpenOnClick="True" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for pages where content is loaded by the page after it's loaded.">
+                        <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Scroll restore delay:</TextBlock>
@@ -80,16 +82,75 @@
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
+                        <MenuItem Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars">
+                            <MenuItem StaysOpenOnClick="True">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Top:</TextBlock>
+                                        <xctk:DoubleUpDown TextAlignment="Right" Value="{Binding NegativeMargin.MarginTop}" Increment="1" FormatString="0.0"
+                                                           VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
+
+                                        <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">px</TextBlock>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem StaysOpenOnClick="True">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Right:</TextBlock>
+                                        <xctk:DoubleUpDown TextAlignment="Right" Value="{Binding NegativeMargin.MarginRight}" Increment="1" FormatString="0.0"
+                                                           VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
+
+                                        <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">px</TextBlock>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem StaysOpenOnClick="True">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Bottom:</TextBlock>
+                                        <xctk:DoubleUpDown TextAlignment="Right" Value="{Binding NegativeMargin.MarginBottom}" Increment="1" FormatString="0.0"
+                                                           VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
+
+                                        <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">px</TextBlock>
+                                        <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" Padding="2,0,2,0" ToolTipService.InitialShowDelay="0" ToolTipService.ShowDuration="999999999" ToolTip="This setting is implemented differently from the rest, and when it's not zero the window will lose its resizing grip on the bottom border. Corners are still active for resizing, though.">⚠️
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem StaysOpenOnClick="True">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Left:</TextBlock>
+                                        <xctk:DoubleUpDown TextAlignment="Right" Value="{Binding NegativeMargin.MarginLeft}" Increment="1" FormatString="0.0"
+                                                           VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
+
+                                        <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">px</TextBlock>
+                                    </StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem StaysOpenOnClick="True" Header="Left/Right as native margin" IsCheckable="True" IsChecked="{Binding NegativeMargin.LeftRightNativeMode}"
+                                      ToolTipService.ShowDuration="999999999" ToolTip="Switches left/right margin application from inside the browser via CSS (when off) to changing the position of the browser view (when on). Useful when the page uses size of the viewport to position its components. When this is on the window unfortunately loses resizing grips on the sides with negative margin." />
+                        </MenuItem>
 
                         <Separator />
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
                         <MenuItem Header="Window order locked" IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
-                        <MenuItem Header="Maintain order with ToBack" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
+                        <MenuItem Header="Maintain order with ToBack" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
 
-            <Button DockPanel.Dock="Right" Margin="0,0,-1,0">
+            <Button DockPanel.Dock="Right" Margin="0,0,-1,0" ToolTipService.ShowDuration="999999999">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="ToolTip" Value="Settings for page auto-refresh" />
@@ -162,7 +223,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Interval:</TextBlock>
                                     <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" TextAlignment="Right" Value="{Binding AutoRefresh.AutoRefreshSpan}" Minimum="00:00:01"
-                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" ToolTip="Interval between page auto-refreshes (format: HH:mm:ss, hours can be grater than 24)" />
+                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" ToolTipService.ShowDuration="999999999" ToolTip="Interval between page auto-refreshes (format: HH:mm:ss, hours can be grater than 24)" />
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
@@ -253,6 +314,7 @@
                       ZoomFactor="{Binding ZoomFactor, Mode=TwoWay}"
                       NavigationStarting="OnNavigationStarted"
                       NavigationCompleted="OnNavigationCompleted"
+                      Margin="{Binding NegativeMargin.NativeMargin}"
         />
     </Grid>
 </UserControl>
