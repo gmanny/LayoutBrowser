@@ -73,6 +73,7 @@
                 <Button.ContextMenu>
                     <ContextMenu>
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hidden" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
                         <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
@@ -307,6 +308,19 @@
             </TextBox>
         </DockPanel>
 
+        <Grid Grid.Row="1" Background="Black">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Hidden}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+        </Grid>
+
         <wpf:WebView2 Grid.Row="1"
                       x:Name="webView"
                       CreationProperties="{Binding CreationProperties}"
@@ -314,7 +328,17 @@
                       ZoomFactor="{Binding ZoomFactor, Mode=TwoWay}"
                       NavigationStarting="OnNavigationStarted"
                       NavigationCompleted="OnNavigationCompleted"
-                      Margin="{Binding NegativeMargin.NativeMargin}"
-        />
+                      Margin="{Binding NegativeMargin.NativeMargin}">
+            <wpf:WebView2.Style>
+                <Style TargetType="wpf:WebView2">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Hidden}" Value="True">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </wpf:WebView2.Style>
+        </wpf:WebView2>
     </Grid>
 </UserControl>

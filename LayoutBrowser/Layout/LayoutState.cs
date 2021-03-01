@@ -36,6 +36,8 @@ namespace LayoutBrowser.Layout
 
         public double zoomFactor = 1;
 
+        public bool hidden;
+
         public bool autoRefreshEnabled;
         public TimeSpan autoRefreshTime = TimeSpan.Zero;
 

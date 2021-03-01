@@ -51,6 +51,7 @@ namespace LayoutBrowser.Tab
         
         private string title;
         private double zoomFactor;
+        private bool hidden;
 
         private TaskCompletionSource<Unit> refreshComplete;
 
@@ -79,6 +80,7 @@ namespace LayoutBrowser.Tab
 
             zoomFactor = model.zoomFactor;
             title = model.title;
+            hidden = model.hidden;
 
             refreshBtnCommand = new WindowCommand(ExecuteRefresh);
             goBtnCommand = new WindowCommand(ExecuteGo);
@@ -127,6 +129,7 @@ namespace LayoutBrowser.Tab
             title = title,
             profile = profile.Name,
             zoomFactor = zoomFactor,
+            hidden = hidden,
             autoRefreshEnabled = autoRefresh.AutoRefreshEnabled,
             autoRefreshTime = autoRefresh.AutoRefreshSpan,
             scrollDelay = scrollRestore.ScrollDelay,
@@ -134,6 +137,12 @@ namespace LayoutBrowser.Tab
             scrollY = scrollRestore.LastScroll.Y,
             negativeMargin = negativeMargin.ToModel()
         };
+
+        public bool Hidden
+        {
+            get => hidden;
+            set => SetProperty(ref hidden, value);
+        }
 
         public async void Refresh()
         {

@@ -189,6 +189,22 @@ namespace LayoutBrowser.Window
         private const int HWND_TOPMOST = -1;
         private const int HWND_NOTOPMOST = -2;
 
+        private void OnMinimizeClick(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void MinimizeBtn_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                WindowTabItem tab = viewModel.CurrentTab;
+                if (tab != null)
+                {
+                    tab.ViewModel.Hidden = !tab.ViewModel.Hidden;
+                }
+            }
+        }
     }
 
     public static class Win32MaximizeHelper

@@ -271,6 +271,37 @@
                         </ToggleButton.Style>
                     </ToggleButton>
 
+                    <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type Button}">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                                <Grid Margin="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="FontSize" Value="14" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#99ffffff" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#b2ffffff" />
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
+                                        <Setter Property="FontSize" Value="10" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                     <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
                         <Button.Style>
                             <Style TargetType="Button">
