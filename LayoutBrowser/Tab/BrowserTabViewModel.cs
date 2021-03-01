@@ -125,7 +125,7 @@ namespace LayoutBrowser.Tab
 
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
-            url = browserSource.ToString(),
+            url = browserSource?.ToString(),
             title = title,
             profile = profile.Name,
             zoomFactor = zoomFactor,

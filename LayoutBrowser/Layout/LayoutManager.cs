@@ -205,9 +205,15 @@ namespace LayoutBrowser.Layout
 
         private void OnWindowTabClosed(LayoutBrowserWindowViewModel wnd, WindowTabItem tab, int tabIndex)
         {
+            LayoutWindowTab tabModel = tab.ViewModel.ToModel();
+            if (tabModel.url.IsNullOrEmpty())
+            {
+                return;
+            }
+
             closedItems.closedItems.Add(new ClosedLayoutTab
             {
-                tab = tab.ViewModel.ToModel(),
+                tab = tabModel,
                 tabPosition = tabIndex,
                 windowId = wnd.Id
             });
