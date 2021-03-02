@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,12 +25,16 @@ namespace LayoutBrowser.Window
     /// </summary>
     public partial class LayoutBrowserWindow
     {
+        private static int windowIndex;
+
         private readonly LayoutBrowserWindowViewModel viewModel;
         private readonly LayoutManager layoutManager;
         private readonly ILogger logger;
 
         private IntPtr? cachedHandle;
         private bool cachedTopMost;
+
+        private int myIndex = Interlocked.Increment(ref windowIndex);
 
         static LayoutBrowserWindow()
         {
@@ -41,6 +46,8 @@ namespace LayoutBrowser.Window
             this.viewModel = viewModel;
             this.layoutManager = layoutManager;
             this.logger = logger;
+
+            Dispatcher.BeginInvoke(FirstBackgroundDispatch, DispatcherPriority.Background);
 
             viewModel.WindowCloseRequested += Close;
 
@@ -69,6 +76,18 @@ namespace LayoutBrowser.Window
             }, DispatcherPriority.Background);
         }
 
+        private void FirstBackgroundDispatch()
+        {
+            logger.LogDebug($"Restoring window #{windowIndex} to {viewModel.LeftInit:0.0}/{viewModel.TopInit:0.0} {viewModel.WidthInit:0.0}x{viewModel.HeightInit:0.0} from {viewModel.Left:0.0}/{viewModel.Top:0.0} {viewModel.Width:0.0}x{viewModel.Height:0.0}");
+            
+            PresentationSource source = PresentationSource.FromVisual(this);
+            CompositionTarget ct = source?.CompositionTarget;
+            double dpiX = ct?.TransformToDevice.M11 ?? 1.0;
+            double dpiY = ct?.TransformToDevice.M22 ?? 1.0;
+
+            SetWindowPos(CachedHandle, IntPtr.Zero, (int) (viewModel.LeftInit*dpiX), (int) (viewModel.TopInit*dpiY), (int) (viewModel.WidthInit*dpiX), (int) (viewModel.HeightInit*dpiY), SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+        }
+
         private static void OnTopmostChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is LayoutBrowserWindow wnd))
@@ -83,7 +102,7 @@ namespace LayoutBrowser.Window
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            logger.LogDebug($"Window DPI changed x:{oldDpi.DpiScaleX}/y:{oldDpi.DpiScaleY} -> x:{newDpi.DpiScaleX}/y:{newDpi.DpiScaleY}");
+            logger.LogDebug($"Window #{myIndex} DPI changed x:{oldDpi.DpiScaleX}/y:{oldDpi.DpiScaleY} -> x:{newDpi.DpiScaleX}/y:{newDpi.DpiScaleY}");
 
             WiggleBrowser();
         }
@@ -142,6 +161,8 @@ namespace LayoutBrowser.Window
 
         protected override void OnSourceInitialized(EventArgs e)
         {
+            logger.LogDebug($"Window #{myIndex} source initialized");
+
             base.OnSourceInitialized(e);
 
             cachedHandle = new WindowInteropHelper(this).Handle;

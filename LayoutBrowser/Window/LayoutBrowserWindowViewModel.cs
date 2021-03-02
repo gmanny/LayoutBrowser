@@ -33,6 +33,7 @@ namespace LayoutBrowser.Window
         private readonly Guid id;
 
         private double left, top, width, height;
+        private readonly double leftInit, topInit, widthInit, heightInit;
         private WindowState state;
         private WindowTabItem currentTab;
         private bool showTabBar;
@@ -47,10 +48,10 @@ namespace LayoutBrowser.Window
 
             id = model.id;
 
-            left = model.left;
-            top = model.top;
-            width = model.width;
-            height = model.height;
+            leftInit = left = model.left;
+            topInit = top = model.top;
+            widthInit = width = model.width;
+            heightInit = height = model.height;
             state = model.windowState;
             uiHidden = model.uiHidden;
 
@@ -71,6 +72,14 @@ namespace LayoutBrowser.Window
                 BackgroundLoadEnabled = true;
             }
         }
+
+        public double LeftInit => leftInit;
+
+        public double TopInit => topInit;
+
+        public double WidthInit => widthInit;
+
+        public double HeightInit => heightInit;
 
         private void OnFirstNavComplete(BrowserTabViewModel vm)
         {
