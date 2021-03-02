@@ -124,7 +124,7 @@ namespace LayoutBrowser.Tab
             }
 
             // bottom margin doesn't work and is implemented differently
-            await webView.ExecuteScriptAsync($"document.body.style.margin = \"{(leftRightNativeMode ? 0 : -marginTop)}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {-marginLeft}px\"");
+            await webView.ExecuteScriptAsync($"document.body.style.margin = \"{-marginTop}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {(leftRightNativeMode ? 0 : -marginLeft)}px\"");
         }
     }
 }
