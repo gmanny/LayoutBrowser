@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,8 +11,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using LayoutBrowser.Layout;
 using Microsoft.Extensions.Logging;
-using Microsoft.Web.WebView2.WinForms;
 using WpfAppCommon;
+using Size = System.Windows.Size;
 
 namespace LayoutBrowser.Window
 {
@@ -50,6 +51,7 @@ namespace LayoutBrowser.Window
             Dispatcher.BeginInvoke(FirstBackgroundDispatch, DispatcherPriority.Background);
 
             viewModel.WindowCloseRequested += Close;
+            viewModel.NativeRect += NativeRect;
 
             InitializeComponent();
 
@@ -76,10 +78,25 @@ namespace LayoutBrowser.Window
             }, DispatcherPriority.Background);
         }
 
+        private Rectangle NativeRect()
+        {
+            if (!GetWindowRect(CachedHandle, out RECT r))
+            {
+                return new Rectangle();
+            }
+
+            return new Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top);
+        }
+
         private void FirstBackgroundDispatch()
         {
-            logger.LogDebug($"Restoring window #{windowIndex} to {viewModel.LeftInit:0.0}/{viewModel.TopInit:0.0} {viewModel.WidthInit:0.0}x{viewModel.HeightInit:0.0} from {viewModel.Left:0.0}/{viewModel.Top:0.0} {viewModel.Width:0.0}x{viewModel.Height:0.0}");
-            
+            if (!double.IsNaN(viewModel.LeftNativeInit))
+            {
+                SetWindowPos(CachedHandle, IntPtr.Zero, (int) viewModel.LeftNativeInit, (int) viewModel.TopNativeInit, (int) viewModel.WidthNativeInit, (int) viewModel.HeightNativeInit, SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+
+                return;
+            }
+
             PresentationSource source = PresentationSource.FromVisual(this);
             CompositionTarget ct = source?.CompositionTarget;
             double dpiX = ct?.TransformToDevice.M11 ?? 1.0;
@@ -201,6 +218,9 @@ namespace LayoutBrowser.Window
         
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
+
+        [DllImport("user32.dll")]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
         private const int WS_EX_NOACTIVATE = 0x08000000;
         private const int GWL_EXSTYLE = -20;
@@ -351,15 +371,15 @@ namespace LayoutBrowser.Window
                 this.x = x; 
                 this.y = y;
             } 
-        } 
-
-        [StructLayout(LayoutKind.Sequential)] 
-        public struct RECT {
-            public int left; 
-            public int top; 
-            public int right;
-            public int bottom; 
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)] 
+    public struct RECT {
+        public int left; 
+        public int top; 
+        public int right;
+        public int bottom; 
     }
 
     [Flags]

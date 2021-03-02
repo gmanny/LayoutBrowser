@@ -22,6 +22,7 @@ namespace LayoutBrowser.Layout
         public double top = 100;
         public double width = 800;
         public double height = 500;
+        public double leftNative = Double.NaN, topNative = Double.NaN, widthNative = Double.NaN, heightNative = Double.NaN;
 
         public bool uiHidden;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -34,6 +35,8 @@ namespace LayoutBrowser.Window
 
         private double left, top, width, height;
         private readonly double leftInit, topInit, widthInit, heightInit;
+        private double leftNative, topNative, widthNative, heightNative;
+        private readonly double leftNativeInit, topNativeInit, widthNativeInit, heightNativeInit;
         private WindowState state;
         private WindowTabItem currentTab;
         private bool showTabBar;
@@ -52,6 +55,10 @@ namespace LayoutBrowser.Window
             topInit = top = model.top;
             widthInit = width = model.width;
             heightInit = height = model.height;
+            leftNativeInit = leftNative = model.leftNative;
+            topNativeInit = topNative = model.topNative;
+            widthNativeInit = widthNative = model.widthNative;
+            heightNativeInit = heightNative = model.heightNative;
             state = model.windowState;
             uiHidden = model.uiHidden;
 
@@ -73,13 +80,17 @@ namespace LayoutBrowser.Window
             }
         }
 
+        public event Func<Rectangle> NativeRect;
+        
         public double LeftInit => leftInit;
-
         public double TopInit => topInit;
-
         public double WidthInit => widthInit;
-
         public double HeightInit => heightInit;
+
+        public double LeftNativeInit => leftNativeInit;
+        public double TopNativeInit => topNativeInit;
+        public double WidthNativeInit => widthNativeInit;
+        public double HeightNativeInit => heightNativeInit;
 
         private void OnFirstNavComplete(BrowserTabViewModel vm)
         {
@@ -247,6 +258,10 @@ namespace LayoutBrowser.Window
             top = top,
             width = width,
             height = height,
+            leftNative = leftNative,
+            topNative = topNative,
+            widthNative = widthNative,
+            heightNative = heightNative,
             windowState = state,
             uiHidden = uiHidden,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
@@ -313,25 +328,62 @@ namespace LayoutBrowser.Window
         public double Left
         {
             get => left;
-            set => SetProperty(ref left, value);
+            set
+            {
+                SetProperty(ref left, value);
+
+                UpdateNativeSize();
+            }
         }
 
         public double Top
         {
             get => top;
-            set => SetProperty(ref top, value);
+            set
+            {
+                SetProperty(ref top, value);
+
+                UpdateNativeSize();
+            }
         }
 
         public double Width
         {
             get => width;
-            set => SetProperty(ref width, value);
+            set
+            {
+                SetProperty(ref width, value);
+
+                UpdateNativeSize();
+            }
         }
 
         public double Height
         {
             get => height;
-            set => SetProperty(ref height, value);
+            set
+            {
+                SetProperty(ref height, value);
+
+                UpdateNativeSize();
+            }
+        }
+
+        private void UpdateNativeSize()
+        {
+            Rectangle? nativeRect = NativeRect?.Invoke();
+
+            if (nativeRect == null || nativeRect == new Rectangle())
+            {
+                return;
+            }
+
+            Rectangle nr = nativeRect.Value;
+
+            leftNative = nr.Left;
+            topNative = nr.Top;
+            widthNative = nr.Width;
+            heightNative = nr.Height;
         }
 
         public WindowState State
