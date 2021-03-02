@@ -51,6 +51,7 @@ namespace LayoutBrowser.Tab
         
         private string title;
         private double zoomFactor;
+        private double storedZoomFactor;
         private bool hidden;
 
         private TaskCompletionSource<Unit> refreshComplete;
@@ -78,7 +79,7 @@ namespace LayoutBrowser.Tab
 
             autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, OnAutoRefresh);
 
-            zoomFactor = model.zoomFactor;
+            storedZoomFactor = zoomFactor = model.zoomFactor;
             title = model.title;
             hidden = model.hidden;
 
@@ -277,6 +278,13 @@ namespace LayoutBrowser.Tab
             set => SetProperty(ref zoomFactor, value);
         }
 
+        private void ShakeZoomFactor()
+        {
+            double zf = zoomFactor;
+            ZoomFactor = zf + 0.001;
+            ZoomFactor = zf;
+        }
+
         public WebView2 WebView
         {
             get => webView;
@@ -342,6 +350,8 @@ namespace LayoutBrowser.Tab
         public void OnNavigationStarted(CoreWebView2NavigationStartingEventArgs e)
         {
             IsNavigating = true;
+
+            storedZoomFactor = zoomFactor;
         }
 
         public event Action<BrowserTabViewModel> NavigationCompleted;
@@ -351,6 +361,15 @@ namespace LayoutBrowser.Tab
             IsNavigating = false;
 
             NavigationCompleted?.Invoke(this);
+
+            if (Math.Abs(storedZoomFactor - zoomFactor) < 1e-7)
+            {
+                ShakeZoomFactor();
+            }
+            else
+            {
+                ZoomFactor = storedZoomFactor;
+            }
         }
 
         public event Action<ProfileItem> NewProfileSelected;

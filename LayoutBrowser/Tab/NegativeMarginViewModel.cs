@@ -16,12 +16,13 @@ namespace LayoutBrowser.Tab
     public class NegativeMarginViewModel : ObservableObject
     {
         private double marginLeft, marginTop, marginRight, marginBottom;
-        private bool leftRightNativeMode;
+        private bool enabled, leftRightNativeMode;
 
         private WebView2 webView;
 
         public NegativeMarginViewModel(TabNegativeMargin model)
         {
+            enabled = model.enabled;
             marginLeft = model.left;
             marginTop = model.top;
             marginRight = model.right;
@@ -31,12 +32,24 @@ namespace LayoutBrowser.Tab
 
         public TabNegativeMargin ToModel() => new TabNegativeMargin
         {
+            enabled = enabled,
             left = marginLeft,
             top = marginTop,
             right = marginRight,
             bottom = marginBottom,
             leftRightNativeMode = leftRightNativeMode
         };
+
+        public bool Enabled
+        {
+            get => enabled;
+            set
+            {
+                SetProperty(ref enabled, value);
+
+                UpdateMargin();
+            }
+        }
 
         public double MarginLeft
         {
@@ -93,9 +106,11 @@ namespace LayoutBrowser.Tab
             }
         }
 
-        public Thickness NativeMargin => leftRightNativeMode
-            ? new Thickness(-marginLeft, 0, -marginRight, -marginBottom)
-            : new Thickness(0, 0, 0, -marginBottom);
+        public Thickness NativeMargin => enabled
+                ? leftRightNativeMode
+                    ? new Thickness(-marginLeft, 0, -marginRight, -marginBottom)
+                    : new Thickness(0, 0, 0, -marginBottom)
+                : new Thickness(0, 0, 0, 0);
 
         private void UpdateMargin()
         {
@@ -123,8 +138,12 @@ namespace LayoutBrowser.Tab
                 return;
             }
 
+            string script = enabled
+                ? $"document.body.style.margin = \"{-marginTop}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {(leftRightNativeMode ? 0 : -marginLeft)}px\""
+                : "document.body.style.margin = \"0px 0px 0px 0px\"";
+
             // bottom margin doesn't work and is implemented differently
-            await webView.ExecuteScriptAsync($"document.body.style.margin = \"{-marginTop}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {(leftRightNativeMode ? 0 : -marginLeft)}px\"");
+            await webView.ExecuteScriptAsync(script);
         }
     }
 }

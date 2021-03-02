@@ -84,6 +84,8 @@
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars">
+                            <MenuItem StaysOpenOnClick="True" Header="Enabled" IsCheckable="True" IsChecked="{Binding NegativeMargin.Enabled}"
+                                      ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars" />
                             <MenuItem StaysOpenOnClick="True">
                                 <MenuItem.Header>
                                     <StackPanel Orientation="Horizontal">

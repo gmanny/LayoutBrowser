@@ -49,6 +49,7 @@ namespace LayoutBrowser.Layout
 
     public class TabNegativeMargin
     {
+        public bool enabled;
         public double left, top, right, bottom;
         public bool leftRightNativeMode;
     }
