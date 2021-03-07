@@ -2,7 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,8 +15,10 @@ using LayoutBrowser.Layout;
 using LayoutBrowser.Tab;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Win32;
 using MonitorCommon;
 using MvvmHelpers;
+using WpfAppCommon;
 
 namespace LayoutBrowser.Window
 {
@@ -33,6 +37,8 @@ namespace LayoutBrowser.Window
 
         private readonly Guid id;
 
+        private readonly ICommand changeIconCommand;
+
         private double left, top, width, height;
         private readonly double leftInit, topInit, widthInit, heightInit;
         private double leftNative, topNative, widthNative, heightNative;
@@ -42,6 +48,7 @@ namespace LayoutBrowser.Window
         private bool showTabBar;
         private bool uiHidden;
         private bool backgroundLoadEnabled;
+        private string iconPath;
 
         public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
         {
@@ -61,8 +68,11 @@ namespace LayoutBrowser.Window
             heightNativeInit = heightNative = model.heightNative;
             state = model.windowState;
             uiHidden = model.uiHidden;
+            iconPath = model.iconPath;
 
             tabs.CollectionChanged += OnTabsChanged;
+
+            changeIconCommand = new WindowCommand(PickNewIcon);
 
             foreach (LayoutWindowTab tabModel in model.tabs)
             {
@@ -79,6 +89,8 @@ namespace LayoutBrowser.Window
                 BackgroundLoadEnabled = true;
             }
         }
+
+        public ICommand ChangeIconCommand => changeIconCommand;
 
         public event Func<Rectangle> NativeRect;
         
@@ -115,6 +127,12 @@ namespace LayoutBrowser.Window
                 SetProperty(ref uiHidden, value);
                 OnPropertyChanged(nameof(UiVisible));
             }
+        }
+
+        public string IconPath
+        {
+            get => iconPath;
+            set => SetProperty(ref iconPath, value);
         }
 
         public bool UiVisible => !uiHidden;
@@ -265,7 +283,8 @@ namespace LayoutBrowser.Window
             windowState = state,
             uiHidden = uiHidden,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
-            activeTabIndex = tabs.IndexOf(CurrentTab)
+            activeTabIndex = tabs.IndexOf(CurrentTab),
+            iconPath = iconPath
         };
 
         public ObservableCollection<WindowTabItem> Tabs => tabs;
@@ -620,6 +639,44 @@ namespace LayoutBrowser.Window
         public void ToggleUi()
         {
             UiHidden = !UiHidden;
+        }
+
+        public void PickNewIcon()
+        {
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = ".ico",
+                Filter = "Icon Files (*.ico)|*.ico",
+                FilterIndex = 1,
+                Multiselect = false,
+                Title = "Please select a new window icon"
+            };
+
+            if (iconPath.IsNullOrEmpty())
+            {
+                string entryLocation = Assembly.GetEntryAssembly()?.Location;
+                if (!entryLocation.IsNullOrEmpty())
+                {
+                    string entryDir = Path.GetDirectoryName(entryLocation);
+                    if (entryDir != null)
+                    {
+                        string wholeDir = Path.Combine(entryDir, "Icons", "crystal-clear-icons-by-everaldo", "ico");
+                        ofd.InitialDirectory = wholeDir;
+                    }
+                }
+            }
+            else
+            {
+                ofd.FileName = iconPath;
+            }
+
+            if (ofd.ShowDialog() != true || !File.Exists(ofd.FileName))
+            {
+                return;
+            }
+
+            IconPath = ofd.FileName;
         }
     }
 

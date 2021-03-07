@@ -46,7 +46,12 @@ namespace LayoutBrowser.Layout
         public bool LayoutLocked
         {
             get => layoutLocked;
-            set => layoutLocked = value;
+            set
+            {
+                layoutLocked = value;
+
+                SaveLayout();
+            }
         }
 
         public bool LayoutRestoreUsingToBack

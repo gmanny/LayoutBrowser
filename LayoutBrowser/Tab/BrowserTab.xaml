@@ -9,7 +9,8 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:tab="clr-namespace:LayoutBrowser.Tab"
-             xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"  
+             xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             xmlns:window="clr-namespace:LayoutBrowser.Window"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
@@ -143,6 +144,14 @@
                             </MenuItem>
                             <MenuItem StaysOpenOnClick="True" Header="Left/Right as native margin" IsCheckable="True" IsChecked="{Binding NegativeMargin.LeftRightNativeMode}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="Switches left/right margin application from inside the browser via CSS (when off) to changing the position of the browser view (when on). Useful when the page uses size of the viewport to position its components. When this is on the window unfortunately loses resizing grips on the sides with negative margin." />
+                        </MenuItem>
+
+                        <Separator />
+                        <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current window" Header="Per-window:" />
+                        <MenuItem Header="Change icon" Command="{Binding ParentWindow.ChangeIconCommand}">
+                            <MenuItem.Icon>
+                                <Image Source="{Binding ParentWindow.IconPath}" />
+                            </MenuItem.Icon>
                         </MenuItem>
 
                         <Separator />

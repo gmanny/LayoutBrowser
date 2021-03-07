@@ -15,6 +15,14 @@
         Left="{Binding Left, Mode=TwoWay}" Top="{Binding Top, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}"
         WindowState="{Binding State, Mode=TwoWay}" WindowStyle="None" AllowsTransparency="True"
         Background="#01000000">
+    <Window.Resources>
+        <window:IconPathConverter x:Key="IconPathConv" />
+    </Window.Resources>
+
+    <Window.Icon>
+        <Binding Path="IconPath" Converter="{StaticResource IconPathConv}" />
+    </Window.Icon>
+
     <WindowChrome.WindowChrome>
         <WindowChrome UseAeroCaptionButtons="True" />
     </WindowChrome.WindowChrome>

@@ -27,6 +27,8 @@ namespace LayoutBrowser.Layout
         public bool uiHidden;
 
         public Guid id = Guid.NewGuid();
+
+        public string iconPath;
     }
 
     public class LayoutWindowTab
