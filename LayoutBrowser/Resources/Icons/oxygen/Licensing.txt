@@ -1,0 +1,3 @@
+https://techbase.kde.org/Projects/Oxygen/Licensing
+
+You can get SVGs and PNGs of the icons from https://github.com/KDE/oxygen-icons

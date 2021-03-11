@@ -661,7 +661,7 @@ namespace LayoutBrowser.Window
                     string entryDir = Path.GetDirectoryName(entryLocation);
                     if (entryDir != null)
                     {
-                        string wholeDir = Path.Combine(entryDir, "Icons", "crystal-clear-icons-by-everaldo", "ico");
+                        string wholeDir = Path.Combine(entryDir, "Resources", "Icons", "crystal-clear-icons-by-everaldo", "ico");
                         ofd.InitialDirectory = wholeDir;
                     }
                 }
