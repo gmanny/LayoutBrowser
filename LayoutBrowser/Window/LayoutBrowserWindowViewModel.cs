@@ -181,6 +181,8 @@ namespace LayoutBrowser.Window
 
             tabs.Add(item);
 
+            item.ViewModel.ChangeParent(this);
+
             if (foreground)
             {
                 CurrentTab = item;

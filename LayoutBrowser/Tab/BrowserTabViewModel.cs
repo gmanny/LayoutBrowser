@@ -24,10 +24,11 @@ namespace LayoutBrowser.Tab
 
     public class BrowserTabViewModel : ObservableObject, IDisposable
     {
-        private readonly LayoutBrowserWindowViewModel parentWindow;
         private readonly IWebView2MessagingServiceFactory messengerFactory;
         private readonly LayoutManagerViewModel layoutManagerVm;
         private readonly ILogger logger;
+
+        private LayoutBrowserWindowViewModel parentWindow;
         
         private readonly ProfileItem profile;
         private readonly ProfileListViewModel profileList;
@@ -121,6 +122,13 @@ namespace LayoutBrowser.Tab
         public NegativeMarginViewModel NegativeMargin => negativeMargin;
 
         public LayoutManagerViewModel LayoutMgr => layoutManagerVm;
+
+        public void ChangeParent(LayoutBrowserWindowViewModel newParent)
+        {
+            parentWindow = newParent;
+
+            OnPropertyChanged(nameof(ParentWindow));
+        }
 
         public LayoutBrowserWindowViewModel ParentWindow => parentWindow;
 
