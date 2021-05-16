@@ -50,7 +50,8 @@ namespace LayoutBrowser.Tab
         private bool isNavigating;
         private string refreshButtonText = "↻", refreshButtonHint = "Refresh (F5)";
         
-        private string title;
+        private string browserTitle;
+        private string overrideTitle;
         private double zoomFactor;
         private double storedZoomFactor;
         private bool hidden;
@@ -81,7 +82,8 @@ namespace LayoutBrowser.Tab
             autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, OnAutoRefresh);
 
             storedZoomFactor = zoomFactor = model.zoomFactor;
-            title = model.title;
+            browserTitle = model.title;
+            overrideTitle = model.overrideTitle;
             hidden = model.hidden;
 
             refreshBtnCommand = new WindowCommand(ExecuteRefresh);
@@ -135,7 +137,8 @@ namespace LayoutBrowser.Tab
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
             url = browserSource?.ToString(),
-            title = title,
+            title = browserTitle,
+            overrideTitle = overrideTitle,
             profile = profile.Name,
             zoomFactor = zoomFactor,
             hidden = hidden,
@@ -266,9 +269,11 @@ namespace LayoutBrowser.Tab
             }
         }
 
-        public string Title
+        public string Title => overrideTitle.IsNullOrEmpty() ? browserTitle : overrideTitle.Replace("[$$$]", browserTitle);
+
+        public string BrowserTitle
         {
-            get => title;
+            get => browserTitle;
             set
             {
                 if (value.IsNullOrEmpty())
@@ -276,7 +281,18 @@ namespace LayoutBrowser.Tab
                     return;
                 }
 
-                SetProperty(ref title, value);
+                SetProperty(ref browserTitle, value);
+                OnPropertyChanged(nameof(Title));
+            }
+        }
+
+        public string OverrideTitle
+        {
+            get => overrideTitle;
+            set
+            {
+                SetProperty(ref overrideTitle, value);
+                OnPropertyChanged(nameof(Title));
             }
         }
 
@@ -320,7 +336,7 @@ namespace LayoutBrowser.Tab
             await scrollRestore.PlugIntoWebView(wv, messenger);
             await negativeMargin.PlugIntoWebView(wv, messenger);
 
-            Title = wv.CoreWebView2.DocumentTitle;
+            BrowserTitle = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;
 
             wv.CoreWebView2.WindowCloseRequested += OnCloseRequested;
@@ -352,7 +368,7 @@ namespace LayoutBrowser.Tab
 
         private void OnTitleChanged(object sender, object e)
         {
-            Title = webView.CoreWebView2.DocumentTitle;
+            BrowserTitle = webView.CoreWebView2.DocumentTitle;
         }
 
         public void OnNavigationStarted(CoreWebView2NavigationStartingEventArgs e)

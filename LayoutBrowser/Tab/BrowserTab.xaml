@@ -145,6 +145,14 @@
                             <MenuItem StaysOpenOnClick="True" Header="Left/Right as native margin" IsCheckable="True" IsChecked="{Binding NegativeMargin.LeftRightNativeMode}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="Switches left/right margin application from inside the browser via CSS (when off) to changing the position of the browser view (when on). Useful when the page uses size of the viewport to position its components. When this is on the window unfortunately loses resizing grips on the sides with negative margin." />
                         </MenuItem>
+                        <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Override tab's title to whatever you want. Use triple dollar signs in square brackets ([$$$]) to insert the web page title into your own.">
+                            <MenuItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Title override:</TextBlock>
+                                    <TextBox Text="{Binding OverrideTitle, UpdateSourceTrigger=PropertyChanged}" MinWidth="40" MaxWidth="120" VerticalAlignment="Center" BorderThickness="0" Padding="5,0,5,0" />
+                                </StackPanel>
+                            </MenuItem.Header>
+                        </MenuItem>
 
                         <Separator />
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current window" Header="Per-window:" />

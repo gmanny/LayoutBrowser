@@ -10,7 +10,7 @@
         xmlns:window="clr-namespace:LayoutBrowser.Window"
         mc:Ignorable="d"
         x:Name="wholeWindow"
-        Title="{Binding CurrentTab.ViewModel.Title}"
+        Title="{Binding CurrentTab.ViewModel.Title, Mode=OneWay}"
         DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}"
         Left="{Binding Left, Mode=TwoWay}" Top="{Binding Top, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}"
         WindowState="{Binding State, Mode=TwoWay}" WindowStyle="None" AllowsTransparency="True"
@@ -68,7 +68,7 @@
                             </Grid.Style>
 
                             <TextBlock x:Name="titleTextBlock" TextTrimming="CharacterEllipsis" utils:TextBlockService.AutomaticToolTipEnabled="True"
-                                       ToolTip="{Binding ViewModel.Title}" HorizontalAlignment="Left">
+                                       ToolTip="{Binding ViewModel.Title, Mode=OneWay}" HorizontalAlignment="Left">
                                 <InlineUIContainer>
                                     <InlineUIContainer.Child>
                                         <Grid VerticalAlignment="Center" Width="15" Margin="0,-3,1,-3" Background="Transparent">
@@ -86,7 +86,7 @@
                                             <TextBlock Text="◯" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Grid>
                                     </InlineUIContainer.Child>
-                                </InlineUIContainer><Run Text="{Binding ViewModel.Title}" />
+                                </InlineUIContainer><Run Text="{Binding ViewModel.Title, Mode=OneWay}" />
                             </TextBlock>
                         </Grid>
                     </Grid>
@@ -133,7 +133,7 @@
                                 <TextBlock Text="◯" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Grid>
                         </InlineUIContainer.Child>
-                    </InlineUIContainer><Run Text="{Binding CurrentTab.ViewModel.Title}" />
+                    </InlineUIContainer><Run Text="{Binding CurrentTab.ViewModel.Title, Mode=OneWay}" />
                 </TextBlock>
 
                 <Grid Grid.Column="0">

@@ -36,6 +36,7 @@ namespace LayoutBrowser.Layout
     {
         public string url;
         public string title = "New Tab";
+        public string overrideTitle;
         public string profile = ProfileManager.DefaultProfile;
 
         public double zoomFactor = 1;
