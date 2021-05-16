@@ -246,6 +246,14 @@ namespace LayoutBrowser.Window
                 }
             }
         }
+
+        private void UiHideBtn_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                viewModel.NotInLayout = !viewModel.NotInLayout;
+            }
+        }
     }
 
     public static class Win32MaximizeHelper

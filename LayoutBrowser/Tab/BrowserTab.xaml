@@ -148,6 +148,7 @@
 
                         <Separator />
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current window" Header="Per-window:" />
+                        <MenuItem Header="Not in layout" IsCheckable="True" IsChecked="{Binding ParentWindow.NotInLayout}" ToolTip="Exclude the window from a locked layout so that it's not obscured by other windows when activated." />
                         <MenuItem Header="Change icon" Command="{Binding ParentWindow.ChangeIconCommand}">
                             <MenuItem.Icon>
                                 <Image Source="{Binding ParentWindow.IconPath}" />

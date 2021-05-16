@@ -178,7 +178,13 @@ namespace LayoutBrowser.Layout
             {
                 for (int i = windows.Count - 1; i >= 0; i--)
                 {
-                    windows[i].Window.BringToFrontWithoutFocus();
+                    WindowItem wnd = windows[i];
+                    if (wnd.ViewModel.NotInLayout)
+                    {
+                        continue;
+                    }
+
+                    wnd.Window.BringToFrontWithoutFocus();
                 }
             }
 
@@ -186,7 +192,13 @@ namespace LayoutBrowser.Layout
             {
                 for (int i = 0; i < windows.Count; i++)
                 {
-                    windows[i].Window.BringToBack();
+                    WindowItem wnd = windows[i];
+                    if (wnd.ViewModel.NotInLayout)
+                    {
+                        continue;
+                    }
+
+                    wnd.Window.BringToBack();
                 }
             }
 
@@ -234,7 +246,8 @@ namespace LayoutBrowser.Layout
                 top = parentWindow.Top + 30,
                 width = parentWindow.Width,
                 height = parentWindow.Height,
-                windowState = WindowState.Normal
+                windowState = WindowState.Normal,
+                notInLayout = layoutLocked
             });
 
             wnd.ViewModel.AddForeignTab(item, true);
@@ -257,7 +270,8 @@ namespace LayoutBrowser.Layout
                 top = parentWindow.Top + 30,
                 width = parentWindow.Width,
                 height = parentWindow.Height,
-                windowState = WindowState.Normal
+                windowState = WindowState.Normal,
+                notInLayout = layoutLocked
             }, !foreground);
 
             if (e != null)
@@ -319,7 +333,7 @@ namespace LayoutBrowser.Layout
 
         private void OnActivated(WindowItem item, EventArgs e)
         {
-            if (layoutLocked)
+            if (layoutLocked && !item.ViewModel.NotInLayout)
             {
                 RestoreWindowOrder(item);
                 return;

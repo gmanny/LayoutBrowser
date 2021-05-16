@@ -47,6 +47,7 @@ namespace LayoutBrowser.Window
         private WindowTabItem currentTab;
         private bool showTabBar;
         private bool uiHidden;
+        private bool notInLayout;
         private bool backgroundLoadEnabled;
         private string iconPath;
 
@@ -68,6 +69,7 @@ namespace LayoutBrowser.Window
             heightNativeInit = heightNative = model.heightNative;
             state = model.windowState;
             uiHidden = model.uiHidden;
+            notInLayout = model.notInLayout;
             iconPath = model.iconPath;
 
             tabs.CollectionChanged += OnTabsChanged;
@@ -127,6 +129,12 @@ namespace LayoutBrowser.Window
                 SetProperty(ref uiHidden, value);
                 OnPropertyChanged(nameof(UiVisible));
             }
+        }
+
+        public bool NotInLayout
+        {
+            get => notInLayout;
+            set => SetProperty(ref notInLayout, value);
         }
 
         public string IconPath
@@ -284,6 +292,7 @@ namespace LayoutBrowser.Window
             heightNative = heightNative,
             windowState = state,
             uiHidden = uiHidden,
+            notInLayout = notInLayout,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
             activeTabIndex = tabs.IndexOf(CurrentTab),
             iconPath = iconPath

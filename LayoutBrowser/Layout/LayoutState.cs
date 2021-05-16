@@ -25,6 +25,7 @@ namespace LayoutBrowser.Layout
         public double leftNative = Double.NaN, topNative = Double.NaN, widthNative = Double.NaN, heightNative = Double.NaN;
 
         public bool uiHidden;
+        public bool notInLayout;
 
         public Guid id = Guid.NewGuid();
 

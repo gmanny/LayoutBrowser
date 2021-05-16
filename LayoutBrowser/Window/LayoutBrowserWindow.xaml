@@ -244,7 +244,7 @@
                 </Grid>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ToggleButton x:Name="uiHideBtn" IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Toggle UI visibility (Ctrl+Shift+U)">
+                    <ToggleButton x:Name="uiHideBtn" IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Toggle UI visibility (Ctrl+Shift+U)&#xD;&#xA;Right click: Toggle Not in Layout" MouseDown="UiHideBtn_OnMouseDown">
                         <ToggleButton.Style>
                             <Style TargetType="ToggleButton">
                                 <Setter Property="Template">
@@ -271,15 +271,33 @@
                                     <DataTrigger Binding="{Binding ShowTabBar}" Value="False">
                                         <Setter Property="FontSize" Value="10" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding UiHidden}" Value="True">
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding UiHidden}" Value="False" />
+                                            <Condition Binding="{Binding NotInLayout}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Content" Value="▲" />
+                                    </MultiDataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding UiHidden}" Value="True" />
+                                            <Condition Binding="{Binding NotInLayout}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
                                         <Setter Property="Content" Value="▽" />
-                                    </DataTrigger>
+                                    </MultiDataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding UiHidden}" Value="True" />
+                                            <Condition Binding="{Binding NotInLayout}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Content" Value="▼" />
+                                    </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </ToggleButton.Style>
                     </ToggleButton>
 
-                    <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
+                    <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)&#xD;&#xA;Right click: Toggle content visibility" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
