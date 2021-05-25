@@ -1,0 +1,3 @@
+[submodule "submodules/NetCommonLib"]
+	path = submodules/NetCommonLib
+	url = https://github.com/gmanny/NetCommonLib.git
