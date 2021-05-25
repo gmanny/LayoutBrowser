@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:LayoutBrowser"
         xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:utils="clr-namespace:WpfAppCommon.Utils;assembly=WpfAppCommon"
-        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:window="clr-namespace:LayoutBrowser.Window"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         x:Name="wholeWindow"
         Title="{Binding CurrentTab.ViewModel.Title, Mode=OneWay}"
@@ -153,9 +153,9 @@
                              utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
                              Visibility="{Binding ShowTabBar, Converter={StaticResource BoolToVis}}" Background="#A0FFFFFF"
                              HorizontalAlignment="Left" Margin="0">
-                        <i:Interaction.Behaviors>
+                        <b:Interaction.Behaviors>
                             <utils:ScrollIntoViewForListBox />
-                        </i:Interaction.Behaviors>
+                        </b:Interaction.Behaviors>
 
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>

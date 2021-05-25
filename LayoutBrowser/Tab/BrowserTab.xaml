@@ -6,11 +6,10 @@
              xmlns:local="clr-namespace:LayoutBrowser"
              xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
              xmlns:utils="clr-namespace:WpfAppCommon.Utils;assembly=WpfAppCommon"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:tab="clr-namespace:LayoutBrowser.Tab"
-             xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
              xmlns:window="clr-namespace:LayoutBrowser.Window"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
@@ -67,9 +66,9 @@
             </Button>
 
             <Button DockPanel.Dock="Right" Margin="0,0,0,0" ToolTip="Additional settings" Content="⋮" Width="20" x:Name="menuButton">
-                <i:Interaction.Behaviors>
+                <b:Interaction.Behaviors>
                     <utils:DropDownButtonBehavior />
-                </i:Interaction.Behaviors>
+                </b:Interaction.Behaviors>
 
                 <Button.ContextMenu>
                     <ContextMenu>
@@ -232,9 +231,9 @@
                     </StackPanel>
                 </Button.Content>
 
-                <i:Interaction.Behaviors>
+                <b:Interaction.Behaviors>
                     <utils:DropDownButtonBehavior />
-                </i:Interaction.Behaviors>
+                </b:Interaction.Behaviors>
 
                 <Button.ContextMenu>
                     <ContextMenu>
@@ -290,9 +289,9 @@
                         <Path Margin="2" VerticalAlignment="Center" Width="6" Fill="Black" Stretch="Uniform" HorizontalAlignment="Right" Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z "/>
                     </StackPanel>
                 </Button.Content>
-                <i:Interaction.Behaviors>
+                <b:Interaction.Behaviors>
                     <utils:DropDownButtonBehavior />
-                </i:Interaction.Behaviors>
+                </b:Interaction.Behaviors>
 
                 <Button.Resources>
                     <tab:DefaultItemContainerTemplateSelector x:Key="Dicts" />
