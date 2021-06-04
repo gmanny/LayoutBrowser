@@ -29,8 +29,11 @@ namespace LayoutBrowser.Layout
         private ClosedItemHistory closedItems;
 
         private bool layoutLocked;
+        private bool minimizedAll;
         private bool layoutRestoreUsingToBack;
         private bool stopping;
+
+        private bool inMinimizeAll;
 
         public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, JsonSerializerSvc serSvc, ProcessLifetimeSvc lifetimeSvc, ILogger logger)
         {
@@ -60,7 +63,9 @@ namespace LayoutBrowser.Layout
             set => layoutRestoreUsingToBack = value;
         }
 
+#pragma warning disable 1998
         private async Task OnAppStop()
+#pragma warning restore 1998
         {
             stopping = true;
 
@@ -77,7 +82,16 @@ namespace LayoutBrowser.Layout
             }
             else
             {
-                state = ser.Deserialize<LayoutState>(Settings.Default.Layout);
+                try
+                {
+                    state = ser.Deserialize<LayoutState>(Settings.Default.Layout);
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning(e, "Failed to deserialize layout");
+
+                    state = new LayoutState();
+                }
             }
 
             if (state.windows.IsEmpty())
@@ -88,7 +102,7 @@ namespace LayoutBrowser.Layout
             if (state.windows.Count == 1 && state.windows[0].tabs.IsEmpty())
             {
                 state.windows[0].tabs.Add(
-                    new LayoutWindowTab { }
+                    new LayoutWindowTab()
                 );
             }
 
@@ -101,6 +115,7 @@ namespace LayoutBrowser.Layout
             {
                 windows = windows.Select(w => w.ViewModel.ToModel()).ToList(),
                 locked = layoutLocked,
+                minimizedAll = minimizedAll,
                 restoreUsingToBack = layoutRestoreUsingToBack
             };
 
@@ -133,6 +148,7 @@ namespace LayoutBrowser.Layout
             }
 
             LayoutLocked = state.locked;
+            minimizedAll = state.minimizedAll;
             LayoutRestoreUsingToBack = state.restoreUsingToBack;
         }
         
@@ -149,11 +165,11 @@ namespace LayoutBrowser.Layout
                 logger.LogDebug($"Found window with duplicate ID {item.ViewModel.Id}");
             }
 
-            w.Activated += (s, e) => OnActivated(item, e);
-            w.Closed += (s, e) => OnClosed(item, e);
+            w.Activated += (s, e) => OnActivated(item);
+            w.Closed += (s, e) => OnClosed(item);
             vm.WindowBecameEmpty += _ => w.Close();
             vm.OpenNewWindow += OnOpenNewWindow;
-            vm.PopoutRequested += (w, t) => PopoutTab(t, w);
+            vm.PopoutRequested += (wn, t) => PopoutTab(t, wn);
             vm.TabClosed += OnWindowTabClosed;
 
             if (noActivation)
@@ -168,6 +184,12 @@ namespace LayoutBrowser.Layout
         
         private void RestoreWindowOrder(WindowItem item)
         {
+            if (inMinimizeAll)
+            {
+                // don't do window ordering inside a bulk operation
+                return;
+            }
+
             int index = windows.IndexOf(item);
             if (index < 0)
             {
@@ -197,7 +219,7 @@ namespace LayoutBrowser.Layout
                     {
                         continue;
                     }
-
+                    
                     wnd.Window.BringToBack();
                 }
             }
@@ -218,6 +240,60 @@ namespace LayoutBrowser.Layout
 
             // repeat after delay because it sometimes bugs out :\
             windows[index].Window.Dispatcher.BeginInvoke(RestoreLayoutGen, DispatcherPriority.Background);
+        }
+
+        public void MinimizeAll()
+        {
+            try
+            {
+                inMinimizeAll = true;
+
+                foreach (WindowItem wnd in windows)
+                {
+                    if (wnd.ViewModel.NotInLayout)
+                    {
+                        continue;
+                    }
+
+                    wnd.ViewModel.Minimize();
+                }
+            }
+            finally
+            {
+                inMinimizeAll = false;
+            }
+
+            minimizedAll = true;
+        }
+
+        public void RestoreAll()
+        {
+            if (!minimizedAll)
+            {
+                return;
+            }
+
+            try
+            {
+                inMinimizeAll = true;
+
+                foreach (WindowItem wnd in Enumerable.Reverse(windows))
+                {
+                    if (wnd.ViewModel.NotInLayout)
+                    {
+                        continue;
+                    }
+
+                    wnd.ViewModel.Restore();
+                    wnd.Window.Activate();
+                }
+            }
+            finally
+            {
+                inMinimizeAll = false;
+            }
+
+            minimizedAll = false;
         }
 
         private void OnWindowTabClosed(LayoutBrowserWindowViewModel wnd, WindowTabItem tab, int tabIndex)
@@ -247,7 +323,7 @@ namespace LayoutBrowser.Layout
                 width = parentWindow.Width,
                 height = parentWindow.Height,
                 windowState = WindowState.Normal,
-                notInLayout = layoutLocked
+                notInLayout = layoutLocked || minimizedAll
             });
 
             wnd.ViewModel.AddForeignTab(item, true);
@@ -271,7 +347,7 @@ namespace LayoutBrowser.Layout
                 width = parentWindow.Width,
                 height = parentWindow.Height,
                 windowState = WindowState.Normal,
-                notInLayout = layoutLocked
+                notInLayout = layoutLocked || minimizedAll
             }, !foreground);
 
             if (e != null)
@@ -292,7 +368,7 @@ namespace LayoutBrowser.Layout
             }
         }
 
-        private void OnClosed(WindowItem item, EventArgs e)
+        private void OnClosed(WindowItem item)
         {
             if (stopping)
             {
@@ -331,8 +407,23 @@ namespace LayoutBrowser.Layout
             }
         }
 
-        private void OnActivated(WindowItem item, EventArgs e)
+        private void OnActivated(WindowItem item)
         {
+            if (inMinimizeAll)
+            {
+                return;
+            }
+
+            if (!inMinimizeAll && minimizedAll && !item.ViewModel.NotInLayout)
+            {
+                item.Window.Dispatcher.BeginInvoke(() =>
+                {
+                    RestoreAll();
+
+                    item.Window.Activate();
+                }, DispatcherPriority.Background);
+            }
+
             if (layoutLocked && !item.ViewModel.NotInLayout)
             {
                 RestoreWindowOrder(item);

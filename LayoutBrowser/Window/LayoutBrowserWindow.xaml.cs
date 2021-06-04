@@ -71,6 +71,7 @@ namespace LayoutBrowser.Window
             AddShortcut(Key.N, ModifierKeys.Control | ModifierKeys.Shift, viewModel.OpenNewEmptyWindow);
             AddShortcut(Key.T, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.ReopenLastClosedItem);
             AddShortcut(Key.U, ModifierKeys.Control | ModifierKeys.Shift, viewModel.ToggleUi);
+            AddShortcut(Key.M, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.MinimizeAll);
 
             Dispatcher.BeginInvoke(() =>
             {
@@ -189,7 +190,7 @@ namespace LayoutBrowser.Window
 
         public void BringToFrontWithoutFocus()
         {
-            if (CachedHandle == IntPtr.Zero)
+            if (CachedHandle == IntPtr.Zero || WindowState == WindowState.Minimized)
             {
                 return;
             }
@@ -208,7 +209,7 @@ namespace LayoutBrowser.Window
 
         public void BringToBack()
         {
-            if (CachedHandle == IntPtr.Zero)
+            if (CachedHandle == IntPtr.Zero || WindowState == WindowState.Minimized)
             {
                 return;
             }
@@ -243,7 +244,19 @@ namespace LayoutBrowser.Window
                 if (tab != null)
                 {
                     tab.ViewModel.Hidden = !tab.ViewModel.Hidden;
+
+                    e.Handled = true;
+                    return;
                 }
+            }
+
+            if (e.ChangedButton == MouseButton.Middle ||
+                e.ChangedButton == MouseButton.Left && Keyboard.Modifiers == (ModifierKeys.Shift | ModifierKeys.Control))
+            {
+                layoutManager.MinimizeAll();
+
+                e.Handled = true;
+                return;
             }
         }
 

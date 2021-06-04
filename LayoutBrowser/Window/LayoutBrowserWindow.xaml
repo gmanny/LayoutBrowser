@@ -297,7 +297,7 @@
                         </ToggleButton.Style>
                     </ToggleButton>
 
-                    <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)&#xD;&#xA;Right click: Toggle content visibility" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
+                    <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)&#xD;&#xA;Right click: Toggle content visibility&#xD;&#xA;Middle click/Ctrl+Shift+Left click/Ctrl+Shift+M: Minimize all in-layout windows" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">

@@ -73,7 +73,7 @@
                 <Button.ContextMenu>
                     <ContextMenu>
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
-                        <MenuItem IsCheckable="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hidden" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hide content" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
                         <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
@@ -147,7 +147,7 @@
                         <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Override tab's title to whatever you want. Use triple dollar signs in square brackets ([$$$]) to insert the web page title into your own.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Title override:</TextBlock>
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Page title override:</TextBlock>
                                     <TextBox Text="{Binding OverrideTitle, UpdateSourceTrigger=PropertyChanged}" MinWidth="40" MaxWidth="120" VerticalAlignment="Center" BorderThickness="0" Padding="5,0,5,0" />
                                 </StackPanel>
                             </MenuItem.Header>

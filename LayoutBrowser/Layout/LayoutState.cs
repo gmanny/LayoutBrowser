@@ -9,6 +9,7 @@ namespace LayoutBrowser.Layout
         public List<LayoutWindow> windows = new List<LayoutWindow>();
 
         public bool locked;
+        public bool minimizedAll;
         public bool restoreUsingToBack;
     }
 
@@ -18,6 +19,7 @@ namespace LayoutBrowser.Layout
         public int activeTabIndex;
 
         public WindowState windowState = WindowState.Normal;
+        public WindowState preMinimizedWindowState = WindowState.Normal;
         public double left = 100;
         public double top = 100;
         public double width = 800;

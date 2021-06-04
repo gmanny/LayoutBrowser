@@ -44,6 +44,7 @@ namespace LayoutBrowser.Window
         private double leftNative, topNative, widthNative, heightNative;
         private readonly double leftNativeInit, topNativeInit, widthNativeInit, heightNativeInit;
         private WindowState state;
+        private WindowState preMinState;
         private WindowTabItem currentTab;
         private bool showTabBar;
         private bool uiHidden;
@@ -68,6 +69,7 @@ namespace LayoutBrowser.Window
             widthNativeInit = widthNative = model.widthNative;
             heightNativeInit = heightNative = model.heightNative;
             state = model.windowState;
+            preMinState = model.preMinimizedWindowState;
             uiHidden = model.uiHidden;
             notInLayout = model.notInLayout;
             iconPath = model.iconPath;
@@ -268,6 +270,28 @@ namespace LayoutBrowser.Window
             }
         }
 
+        public void Minimize()
+        {
+            if (state == WindowState.Minimized)
+            {
+                return;
+            }
+
+            preMinState = state;
+
+            State = WindowState.Minimized;
+        }
+
+        public void Restore()
+        {
+            if (state != WindowState.Minimized)
+            {
+                return;
+            }
+
+            State = preMinState;
+        }
+
         private async Task OnOpenNewWindow(WindowTabItem itm, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
         {
             Task result = OpenNewWindow?.Invoke(itm, this, e, foreground);
@@ -291,6 +315,7 @@ namespace LayoutBrowser.Window
             widthNative = widthNative,
             heightNative = heightNative,
             windowState = state,
+            preMinimizedWindowState = preMinState,
             uiHidden = uiHidden,
             notInLayout = notInLayout,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
@@ -419,7 +444,15 @@ namespace LayoutBrowser.Window
         public WindowState State
         {
             get => state;
-            set => SetProperty(ref state, value);
+            set
+            {
+                if (state == WindowState.Minimized && value == WindowState.Normal && preMinState == WindowState.Maximized)
+                {
+                    value = WindowState.Maximized;
+                }
+
+                SetProperty(ref state, value);
+            }
         }
 
         public void CloseCurrentTab()
