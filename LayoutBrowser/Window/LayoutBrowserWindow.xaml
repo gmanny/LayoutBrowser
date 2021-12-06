@@ -27,6 +27,7 @@
         <WindowChrome UseAeroCaptionButtons="True" />
     </WindowChrome.WindowChrome>
 
+    <!-- This Grid has a Margin, which acts as a non-hittestable of window where Windows-native resizing behavior can trigger -->
     <Grid Margin="3" x:Name="resizeBorderMrg">
         <Grid.Style>
             <Style TargetType="Grid">
@@ -39,10 +40,12 @@
             </Style>
         </Grid.Style>
 
+        <!-- Inner Grid where everyting that can be hittested resides -->
         <Grid WindowChrome.IsHitTestVisibleInChrome="True" x:Name="inGrid">
             <Grid.Resources>
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
+                <!-- Template for the content of the tab header -->
                 <DataTemplate DataType="{x:Type window:WindowTabItem}">
                     <Grid MaxWidth="170">
                         <Grid.Style>
@@ -69,6 +72,7 @@
 
                             <TextBlock x:Name="titleTextBlock" TextTrimming="CharacterEllipsis" utils:TextBlockService.AutomaticToolTipEnabled="True"
                                        ToolTip="{Binding ViewModel.Title, Mode=OneWay}" HorizontalAlignment="Left">
+                                <!-- This inline container contains a "loading" icon which is shown while the tab contents are refreshed -->
                                 <InlineUIContainer>
                                     <InlineUIContainer.Child>
                                         <Grid VerticalAlignment="Center" Width="15" Margin="0,-3,1,-3" Background="Transparent">
@@ -98,12 +102,14 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
+            <!-- Grid with all header contents -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!-- Window header when it has only one tab -->
                 <TextBlock Grid.Column="0" FontSize="10" TextTrimming="CharacterEllipsis" IsHitTestVisible="False" Margin="5,1,1,1">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
@@ -116,6 +122,7 @@
                         </Style>
                     </TextBlock.Style>
 
+                    <!-- This inline container contains a "loading" icon which is shown while the tab contents are refreshed -->
                     <InlineUIContainer>
                         <InlineUIContainer.Child>
                             <Grid VerticalAlignment="Center" Width="15" Margin="0,-3,1,-3" Background="Transparent">
@@ -136,6 +143,7 @@
                     </InlineUIContainer><Run Text="{Binding CurrentTab.ViewModel.Title, Mode=OneWay}" />
                 </TextBlock>
 
+                <!-- Window header when multiple tabs are present -->
                 <Grid Grid.Column="0">
                     <Grid.Style>
                         <Style TargetType="Grid">
@@ -148,6 +156,7 @@
                         </Style>
                     </Grid.Style>
 
+                    <!-- Tab header list -->
                     <ListBox Grid.Row="0" x:Name="tabBar" ItemsSource="{Binding Tabs}" SelectedItem="{Binding CurrentTab, Mode=TwoWay}" 
                              DisplayMemberPath="ViewModel.Title" VerticalContentAlignment="Top" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                              utils:TiltWheelHorizontalScroller.EnableTiltWheelScroll="True" BorderThickness="0" Padding="-1"
@@ -243,7 +252,9 @@
                     </ListBox>
                 </Grid>
 
+                <!-- Stack panel with window control buttons in top right corner -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- "Hide UI" button -->
                     <ToggleButton x:Name="uiHideBtn" IsChecked="{Binding UiHidden}" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Toggle UI visibility (Ctrl+Shift+U)&#xD;&#xA;Right click: Toggle Not in Layout" MouseDown="UiHideBtn_OnMouseDown">
                         <ToggleButton.Style>
                             <Style TargetType="ToggleButton">
@@ -297,6 +308,7 @@
                         </ToggleButton.Style>
                     </ToggleButton>
 
+                    <!-- "Minimize" button -->
                     <Button x:Name="minimizeBtn" Width="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="―" BorderThickness="0" Padding="0,0,0,1" Focusable="False" ToolTip="Minimize (Win+Down)&#xD;&#xA;Right click: Toggle content visibility&#xD;&#xA;Middle click/Ctrl+Shift+Left click/Ctrl+Shift+M: Minimize all in-layout windows" Click="OnMinimizeClick" MouseDown="MinimizeBtn_OnMouseDown">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -328,6 +340,7 @@
                         </Button.Style>
                     </Button>
 
+                    <!-- "Close" button -->
                     <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -361,6 +374,7 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Container for all browser controls that need to be loaded, but not displayed so that the content for all tabs is loaded on application start -->
             <ItemsControl Grid.Row="1" Visibility="Hidden" ItemsSource="{Binding BackgroundLoading}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -374,8 +388,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- White panel under the browser control that makes switching browser tabs look less janky -->
             <Grid x:Name="backdrop" Grid.Row="1" Background="White" />
 
+            <!-- Presenter for the current BrowserTab control -->
             <ContentPresenter Grid.Row="1" Content="{Binding CurrentTab.Control}" Margin="-0.25,0,-0.25,-0.25" />
         </Grid>
     </Grid>

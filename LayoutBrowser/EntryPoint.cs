@@ -16,7 +16,7 @@ namespace LayoutBrowser
             var ep = new WpfAppEntryPoint<App, LayoutBrowserWindow>(new List<INinjectModule>
             {
                 new LayoutBrowserAppModule()
-            }, args, singleInstance: true);
+            }, args, singleInstance: true, showConsole: false);
 
             ep.OverrideStartupSequence(LayoutRestoreStartup);
 

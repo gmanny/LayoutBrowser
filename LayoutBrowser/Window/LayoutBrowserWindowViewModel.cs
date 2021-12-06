@@ -38,6 +38,7 @@ namespace LayoutBrowser.Window
         private readonly Guid id;
 
         private readonly ICommand changeIconCommand;
+        private readonly ICommand quitCommand;
 
         private double left, top, width, height;
         private readonly double leftInit, topInit, widthInit, heightInit;
@@ -77,6 +78,7 @@ namespace LayoutBrowser.Window
             tabs.CollectionChanged += OnTabsChanged;
 
             changeIconCommand = new WindowCommand(PickNewIcon);
+            quitCommand = new WindowCommand(Quit);
 
             foreach (LayoutWindowTab tabModel in model.tabs)
             {
@@ -95,6 +97,7 @@ namespace LayoutBrowser.Window
         }
 
         public ICommand ChangeIconCommand => changeIconCommand;
+        public ICommand QuitCommand => quitCommand;
 
         public event Func<Rectangle> NativeRect;
         

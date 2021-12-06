@@ -25,7 +25,9 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
+        <!-- Panel with the address bar and surrounding buttons -->
         <DockPanel Grid.Row="0" Visibility="{Binding ParentWindow.UiVisible, Converter={StaticResource BoolToVis}}">
+            <!-- "Refresh" button -->
             <Button DockPanel.Dock="Left" Command="{Binding RefreshBtnCommand}"
                     ToolTip="{Binding RefreshButtonHint}"
                     Padding="0" FontSize="16" VerticalContentAlignment="Stretch">
@@ -65,6 +67,7 @@
                 </Button.Content>
             </Button>
 
+            <!-- "More settings" button -->
             <Button DockPanel.Dock="Right" Margin="0,0,0,0" ToolTip="Additional settings" Content="⋮" Width="20" x:Name="menuButton">
                 <b:Interaction.Behaviors>
                     <utils:DropDownButtonBehavior />
@@ -72,6 +75,7 @@
 
                 <Button.ContextMenu>
                     <ContextMenu>
+                        <!-- Per-tab settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
                         <MenuItem IsCheckable="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hide content" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
                         <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
@@ -154,6 +158,7 @@
                         </MenuItem>
 
                         <Separator />
+                        <!-- Per-window settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current window" Header="Per-window:" />
                         <MenuItem Header="Not in layout" IsCheckable="True" IsChecked="{Binding ParentWindow.NotInLayout}" ToolTip="Exclude the window from a locked layout so that it's not obscured by other windows when activated." />
                         <MenuItem Header="Change icon" Command="{Binding ParentWindow.ChangeIconCommand}">
@@ -163,13 +168,16 @@
                         </MenuItem>
 
                         <Separator />
+                        <!-- Global settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
                         <MenuItem Header="Window order locked" IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
                         <MenuItem Header="Maintain order with ToBack" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
+                        <MenuItem Header="Quit" InputGestureText="Ctrl+Q/Alt+Q" Command="{Binding ParentWindow.QuitCommand}" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
 
+            <!-- Auto-refresh button and drop-down -->
             <Button DockPanel.Dock="Right" Margin="0,0,-1,0" ToolTipService.ShowDuration="999999999">
                 <Button.Style>
                     <Style TargetType="Button">
@@ -281,6 +289,7 @@
                 </Button.ContextMenu>
             </Button>
 
+            <!-- Browser profile button and dropdown -->
             <Button DockPanel.Dock="Right" ToolTip="Browser profile used for this tab" Margin="0,0,-1,0">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
@@ -317,8 +326,10 @@
                 </Button.ContextMenu>
             </Button>
 
+            <!-- "Go" button -->
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Margin="0,0,-1,0" Width="20" FontSize="16" />
 
+            <!-- Address bar -->
             <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" BorderThickness="0,0,0,1"
                      utils:TextBoxBehavior.SelectAllTextOnFocus="True" utils:TextBoxBehavior.UnselectAllTextOnFocusLeave="True">
                 <TextBox.InputBindings>
@@ -327,6 +338,7 @@
             </TextBox>
         </DockPanel>
 
+        <!-- Black panel which is displayed when tab contents are hidden -->
         <Grid Grid.Row="1" Background="Black">
             <Grid.Style>
                 <Style TargetType="Grid">
@@ -340,6 +352,7 @@
             </Grid.Style>
         </Grid>
 
+        <!-- Browser control -->
         <wpf:WebView2 Grid.Row="1"
                       x:Name="webView"
                       CreationProperties="{Binding CreationProperties}"
