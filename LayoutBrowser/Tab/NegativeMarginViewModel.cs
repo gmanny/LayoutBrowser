@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using LayoutBrowser.Layout;
 using Microsoft.Web.WebView2.Core;
@@ -17,6 +18,7 @@ namespace LayoutBrowser.Tab
     {
         private double marginLeft, marginTop, marginRight, marginBottom;
         private bool enabled, leftRightNativeMode;
+        private bool hasNonZeroValues;
 
         private WebView2 webView;
 
@@ -28,7 +30,12 @@ namespace LayoutBrowser.Tab
             marginRight = model.right;
             marginBottom = model.bottom;
             leftRightNativeMode = model.leftRightNativeMode;
+
+            hasNonZeroValues = IsNonZero();
         }
+
+        private bool IsNonZero() => Math.Abs(marginLeft) > 1e-5 || Math.Abs(marginTop) > 1e-5 ||
+                                    Math.Abs(marginRight) > 1e-5 || Math.Abs(marginBottom) > 1e-5; 
 
         public TabNegativeMargin ToModel() => new TabNegativeMargin
         {
@@ -39,6 +46,8 @@ namespace LayoutBrowser.Tab
             bottom = marginBottom,
             leftRightNativeMode = leftRightNativeMode
         };
+
+        public bool HasNonZeroValues => hasNonZeroValues;
 
         public bool Enabled
         {
@@ -114,6 +123,9 @@ namespace LayoutBrowser.Tab
 
         private void UpdateMargin()
         {
+            hasNonZeroValues = IsNonZero();
+            OnPropertyChanged(nameof(HasNonZeroValues));
+
             OnPropertyChanged(nameof(NativeMargin));
 
             SetNegativeMargin();

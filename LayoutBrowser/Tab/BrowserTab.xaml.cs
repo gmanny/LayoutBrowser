@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 
 namespace LayoutBrowser.Tab
@@ -37,6 +39,19 @@ namespace LayoutBrowser.Tab
         {
             webView.Visibility = Visibility.Collapsed;
             webView.Dispose();
+        }
+
+        private void OnNegativeMarginToggle(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle && sender is MenuItem itm)
+            {
+                itm.IsChecked = !itm.IsChecked;
+            }
+        }
+
+        private void OnNegativeMarginFeatureButtonPressed(object sender, MouseButtonEventArgs e)
+        {
+            viewModel.NegativeMargin.Enabled = !viewModel.NegativeMargin.Enabled;
         }
     }
 }

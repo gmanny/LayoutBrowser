@@ -229,7 +229,7 @@ namespace LayoutBrowser.Window
             Option<WindowTabItem> itm = tabs.Find(t => t.ViewModel == vm);
             foreach (WindowTabItem tabItem in itm)
             {
-                logger.LogDebug($"Tab {tabItem.ViewModel.Url} requested to close itself");
+                logger.LogDebug($"Tab {tabItem.ViewModel.UrlVm.Url} requested to close itself");
                 CloseTab(tabItem);
             }
         }
@@ -635,7 +635,7 @@ namespace LayoutBrowser.Window
 
         public void Refresh()
         {
-            currentTab?.ViewModel.Refresh();
+            currentTab?.ViewModel.UrlVm.Refresh();
         }
 
         public void FocusAddressBar()

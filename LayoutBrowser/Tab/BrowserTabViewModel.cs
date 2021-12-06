@@ -35,6 +35,7 @@ namespace LayoutBrowser.Tab
         private readonly AutoRefreshSettingsViewModel autoRefresh;
         private readonly ScrollRestoreViewModel scrollRestore;
         private readonly NegativeMarginViewModel negativeMargin;
+        private readonly UrlLockViewModel urlVm;
         
         private readonly CoreWebView2CreationProperties creationArgs;
 
@@ -44,30 +45,26 @@ namespace LayoutBrowser.Tab
         private WebView2 webView;
         private WebView2MessagingService messenger;
 
-        private bool browserSourceExposed;
-        private Uri browserSource;
-        private string url;
-        private bool isNavigating;
-        private string refreshButtonText = "↻", refreshButtonHint = "Refresh (F5)";
-        
         private string browserTitle;
         private string overrideTitle;
         private double zoomFactor;
         private double storedZoomFactor;
         private bool hidden;
 
-        private TaskCompletionSource<Unit> refreshComplete;
-
         public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
             IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory,
-            LayoutManagerViewModel layoutManagerVm, INegativeMarginViewModelFactory negativeMarginFactory, ILogger logger)
+            LayoutManagerViewModel layoutManagerVm, INegativeMarginViewModelFactory negativeMarginFactory, IUrlLockViewModelFactory urlFactory, ILogger logger)
         {
             this.parentWindow = parentWindow;
             this.messengerFactory = messengerFactory;
             this.layoutManagerVm = layoutManagerVm;
             this.logger = logger;
 
+            urlVm = urlFactory.ForTab(model);
+
             scrollRestore = scrollFactory.ForTab(model);
+            urlVm.PreRefresh += () => scrollRestore.RememberScroll();
+            
             negativeMargin = negativeMarginFactory.ForModel(model.negativeMargin ?? new TabNegativeMargin());
 
             Option<ProfileItem> pf = profileManager.Profiles.Find(p => p.Name == model.profile);
@@ -79,39 +76,20 @@ namespace LayoutBrowser.Tab
 
             profileList = profileListFactory.ForOwnerTab(this);
 
-            autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, OnAutoRefresh);
-
+            autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, urlVm.OnAutoRefresh);
+            
             storedZoomFactor = zoomFactor = model.zoomFactor;
             browserTitle = model.title;
             overrideTitle = model.overrideTitle;
             hidden = model.hidden;
 
-            refreshBtnCommand = new WindowCommand(ExecuteRefresh);
-            goBtnCommand = new WindowCommand(ExecuteGo);
+            refreshBtnCommand = new WindowCommand(urlVm.HandleRefreshStopButtonPress);
+            goBtnCommand = new WindowCommand(urlVm.ExecuteGo);
 
             creationArgs = new CoreWebView2CreationProperties
             {
                 UserDataFolder = Path.Combine("Profiles", profile.Name)
             };
-
-            url = model.url;
-            browserSource = model.url.IsNullOrEmpty() ? null : new Uri(model.url);
-        }
-
-        private async Task OnAutoRefresh()
-        {
-            if (webView == null)
-            {
-                return;
-            }
-
-            TaskCompletionSource<Unit> newComplete = new TaskCompletionSource<Unit>();
-            TaskCompletionSource<Unit> oldComplete = Interlocked.Exchange(ref refreshComplete, newComplete);
-            oldComplete?.TrySetResult(Unit.Default);
-
-            await webView.Dispatcher.BeginInvoke(Refresh, DispatcherPriority.Background);
-            
-            await newComplete.Task;
         }
 
         public ICommand RefreshBtnCommand => refreshBtnCommand;
@@ -122,6 +100,7 @@ namespace LayoutBrowser.Tab
         public AutoRefreshSettingsViewModel AutoRefresh => autoRefresh;
         public ScrollRestoreViewModel ScrollRestore => scrollRestore;
         public NegativeMarginViewModel NegativeMargin => negativeMargin;
+        public UrlLockViewModel UrlVm => urlVm;
 
         public LayoutManagerViewModel LayoutMgr => layoutManagerVm;
 
@@ -136,7 +115,8 @@ namespace LayoutBrowser.Tab
 
         public LayoutWindowTab ToModel() => new LayoutWindowTab
         {
-            url = browserSource?.ToString(),
+            url = urlVm.LockedUrl ?? urlVm.InternalBrowserSource?.ToString(),
+            lockUrl = urlVm.LockUrl,
             title = browserTitle,
             overrideTitle = overrideTitle,
             profile = profile.Name,
@@ -156,118 +136,7 @@ namespace LayoutBrowser.Tab
             set => SetProperty(ref hidden, value);
         }
 
-        public async void Refresh()
-        {
-            scrollRestore.RememberScroll();
-
-            await webView.EnsureCoreWebView2Async();
-
-            webView.Reload();
-        }
-
-        private void ExecuteRefresh()
-        {
-            if (isNavigating)
-            {
-                webView.Stop();
-            }
-            else
-            {
-                Refresh();
-            }
-        }
-
-        private async void ExecuteGo()
-        {
-            await webView.EnsureCoreWebView2Async();
-
-            logger.LogDebug($"Navigating to {url}");
-
-            try
-            {
-                webView.CoreWebView2.Navigate(url);
-            }
-            catch (ArgumentException)
-            {
-                string searchUrl = "https://duckduckgo.com/?q=" + HttpUtility.UrlEncode(url);
-
-                webView.CoreWebView2.Navigate(searchUrl);
-            }
-
-            webView.Focus();
-        }
-
         public CoreWebView2CreationProperties CreationProperties => creationArgs;
-
-        private void ExposeBrowserSource()
-        {
-            browserSourceExposed = true;
-
-            OnPropertyChanged(nameof(BrowserSource));
-        }
-
-        public Uri BrowserSource
-        {
-            get => browserSourceExposed ? browserSource : null;
-            set
-            {
-                if (!browserSourceExposed)
-                {
-                    OnPropertyChanged();
-                    return;
-                }
-
-                SetProperty(ref browserSource, value);
-
-                logger.LogDebug($"Source changed to {value}");
-
-                if (value.ToString() == "about:blank")
-                {
-                    Url = "";
-                }
-                else
-                {
-                    Url = value.ToString();
-                }
-            }
-        }
-
-        public string Url
-        {
-            get => url;
-            set => SetProperty(ref url, value);
-        }
-
-        public string RefreshButtonText
-        {
-            get => refreshButtonText;
-            set => SetProperty(ref refreshButtonText, value);
-        }
-
-        public string RefreshButtonHint
-        {
-            get => refreshButtonHint;
-            set => SetProperty(ref refreshButtonHint, value);
-        }
-
-        public bool IsNavigating
-        {
-            get => isNavigating;
-            set
-            {
-                bool stopped = isNavigating && !value;
-
-                SetProperty(ref isNavigating, value);
-
-                RefreshButtonText = value ? "✕" : "↻";
-                RefreshButtonHint = value ? "Stop loading (Esc)" : "Refresh (F5)";
-
-                if (stopped)
-                {
-                    refreshComplete?.TrySetResult(Unit.Default);
-                }
-            }
-        }
 
         public string Title => overrideTitle.IsNullOrEmpty() ? browserTitle : overrideTitle.Replace("[$$$]", browserTitle);
 
@@ -333,6 +202,7 @@ namespace LayoutBrowser.Tab
 
             OnControlInitialized();
 
+            await urlVm.PlugIntoWebView(wv, messenger);
             await scrollRestore.PlugIntoWebView(wv, messenger);
             await negativeMargin.PlugIntoWebView(wv, messenger);
 
@@ -342,7 +212,7 @@ namespace LayoutBrowser.Tab
             wv.CoreWebView2.WindowCloseRequested += OnCloseRequested;
             wv.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
 
-            ExposeBrowserSource();
+            urlVm.AfterInit();
         }
 
         public event Action<BrowserTabViewModel, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
@@ -373,8 +243,6 @@ namespace LayoutBrowser.Tab
 
         public void OnNavigationStarted(CoreWebView2NavigationStartingEventArgs e)
         {
-            IsNavigating = true;
-
             storedZoomFactor = zoomFactor;
         }
 
@@ -382,8 +250,6 @@ namespace LayoutBrowser.Tab
 
         public void OnNavigationCompleted(CoreWebView2NavigationCompletedEventArgs e)
         {
-            IsNavigating = false;
-
             NavigationCompleted?.Invoke(this);
 
             if (Math.Abs(storedZoomFactor - zoomFactor) < 1e-7)

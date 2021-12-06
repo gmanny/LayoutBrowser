@@ -37,6 +37,8 @@ namespace LayoutBrowser
             Bind<IScrollRestoreViewModelFactory>().ToFactory();
             Bind<BrowserTabViewModel>().ToSelf();
             Bind<IBrowserTabViewModelFactory>().ToFactory();
+            Bind<UrlLockViewModel>().ToSelf();
+            Bind<IUrlLockViewModelFactory>().ToFactory();
 
             Bind<LayoutBrowserWindow>().ToSelf();
             Bind<ILayoutBrowserWindowFactory>().ToFactory();

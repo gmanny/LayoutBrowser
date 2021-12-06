@@ -29,7 +29,7 @@
         <DockPanel Grid.Row="0" Visibility="{Binding ParentWindow.UiVisible, Converter={StaticResource BoolToVis}}">
             <!-- "Refresh" button -->
             <Button DockPanel.Dock="Left" Command="{Binding RefreshBtnCommand}"
-                    ToolTip="{Binding RefreshButtonHint}"
+                    ToolTip="{Binding UrlVm.RefreshButtonHint}"
                     Padding="0" FontSize="16" VerticalContentAlignment="Stretch">
                 <Button.Resources>
                     <Storyboard x:Key="LoadingPulse" RepeatBehavior="Forever">
@@ -51,7 +51,7 @@
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsNavigating}" Value="True">
+                                    <DataTrigger Binding="{Binding UrlVm.IsNavigating}" Value="True">
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard Name="LoadingStart" Storyboard="{StaticResource LoadingPulse}"/>
                                         </DataTrigger.EnterActions>
@@ -62,7 +62,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <TextBlock Margin="0,-2,1,0" HorizontalAlignment="Center" Text="{Binding RefreshButtonText}" />
+                        <TextBlock Margin="0,-2,1,0" HorizontalAlignment="Center" Text="{Binding UrlVm.RefreshButtonText}" />
                     </Border>
                 </Button.Content>
             </Button>
@@ -87,7 +87,8 @@
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
-                        <MenuItem Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars">
+                        <MenuItem Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars"
+                                  StaysOpenOnClick="True" IsChecked="{Binding NegativeMargin.Enabled}" PreviewMouseDown="OnNegativeMarginToggle">
                             <MenuItem StaysOpenOnClick="True" Header="Enabled" IsCheckable="True" IsChecked="{Binding NegativeMargin.Enabled}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars" />
                             <MenuItem StaysOpenOnClick="True">
@@ -329,13 +330,50 @@
             <!-- "Go" button -->
             <Button DockPanel.Dock="Right" Command="{Binding GoBtnCommand}" Content="▷" Padding="0,-2,1,0" Margin="0,0,-1,0" Width="20" FontSize="16" />
 
-            <!-- Address bar -->
-            <TextBox x:Name="urlBar" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" BorderThickness="0,0,0,1"
-                     utils:TextBoxBehavior.SelectAllTextOnFocus="True" utils:TextBoxBehavior.UnselectAllTextOnFocusLeave="True">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding GoBtnCommand}" />
-                </TextBox.InputBindings>
-            </TextBox>
+            <Grid>
+                <Grid.Resources>
+                    <utils:WidthToThicknessConverter x:Key="UrlPaddingConv" Side="Right" />
+                </Grid.Resources>
+
+                <!-- Address bar -->
+                <TextBox x:Name="urlBar" Text="{Binding UrlVm.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" BorderThickness="0,0,0,1"
+                         utils:TextBoxBehavior.SelectAllTextOnFocus="True" utils:TextBoxBehavior.UnselectAllTextOnFocusLeave="True" Padding="{Binding ElementName=featureBtnPanel, Path=ActualWidth, Converter={StaticResource UrlPaddingConv}}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding GoBtnCommand}" />
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <!-- Feature status buttons -->
+                <Menu x:Name="featureBtnPanel" HorizontalAlignment="Right" FontSize="8" VerticalAlignment="Center" Background="White" BorderThickness="0">
+                    <MenuItem Padding="0" ToolTip="Toggle Negative margin" PreviewMouseDown="OnNegativeMarginFeatureButtonPressed" Visibility="{Binding NegativeMargin.HasNonZeroValues, Converter={StaticResource BoolToVis}}">
+                        <MenuItem.Header>
+                            <Grid>
+                                <TextBlock Text="−M" FontWeight="Bold" Visibility="Hidden" />
+
+                                <TextBlock Text="−M" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding NegativeMargin.Enabled}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <MenuItem Padding="0" IsCheckable="True" IsChecked="false">
+                        <MenuItem.Header>
+                            <Border BorderThickness="1" BorderBrush="Red">
+                                <TextBlock>123</TextBlock>
+                            </Border>
+                        </MenuItem.Header>
+                    </MenuItem>
+                </Menu>
+            </Grid>
         </DockPanel>
 
         <!-- Black panel which is displayed when tab contents are hidden -->
@@ -356,7 +394,7 @@
         <wpf:WebView2 Grid.Row="1"
                       x:Name="webView"
                       CreationProperties="{Binding CreationProperties}"
-                      Source="{Binding BrowserSource, Mode=TwoWay}"
+                      Source="{Binding UrlVm.BrowserSource, Mode=TwoWay}"
                       ZoomFactor="{Binding ZoomFactor, Mode=TwoWay}"
                       NavigationStarting="OnNavigationStarted"
                       NavigationCompleted="OnNavigationCompleted"

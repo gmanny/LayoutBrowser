@@ -63,7 +63,7 @@
                                 <Style TargetType="Grid">
                                     <Setter Property="Margin" Value="8,2" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ViewModel.IsNavigating}" Value="True">
+                                        <DataTrigger Binding="{Binding ViewModel.UrlVm.IsNavigating}" Value="True">
                                             <Setter Property="Margin" Value="0,2" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -80,7 +80,7 @@
                                                 <Style TargetType="Grid">
                                                     <Setter Property="Visibility" Value="Collapsed" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ViewModel.IsNavigating}" Value="True">
+                                                        <DataTrigger Binding="{Binding ViewModel.UrlVm.IsNavigating}" Value="True">
                                                             <Setter Property="Visibility" Value="Visible" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -130,7 +130,7 @@
                                     <Style TargetType="Grid">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding CurrentTab.ViewModel.IsNavigating}" Value="True">
+                                            <DataTrigger Binding="{Binding CurrentTab.ViewModel.UrlVm.IsNavigating}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                         </Style.Triggers>
