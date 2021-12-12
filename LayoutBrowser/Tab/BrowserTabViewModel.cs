@@ -84,7 +84,7 @@ namespace LayoutBrowser.Tab
             hidden = model.hidden;
 
             refreshBtnCommand = new WindowCommand(urlVm.HandleRefreshStopButtonPress);
-            goBtnCommand = new WindowCommand(urlVm.ExecuteGo);
+            goBtnCommand = new WindowCommand(async () => await urlVm.ExecuteGo());
 
             creationArgs = new CoreWebView2CreationProperties
             {

@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using System.Windows;
 using System.Windows.Threading;
 using LanguageExt;
 using LayoutBrowser.Layout;
@@ -33,6 +32,8 @@ namespace LayoutBrowser.Tab
 
         private bool lockUrl;
         private string lockedUrl;
+        private int lockUrlRetries;
+        private bool lockUrlSettled = true;
         
         private WebView2 webView;
 
@@ -65,10 +66,43 @@ namespace LayoutBrowser.Tab
         private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             IsNavigating = false;
+
+            Dispatcher.CurrentDispatcher.BeginInvoke(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(0.25));
+
+                if (lockUrl)
+                {
+                    if (url != lockedUrl)
+                    {
+                        if (lockUrlRetries < 4)
+                        {
+                            LockUrlRetries++;
+                            lockUrlSettled = false;
+
+                            webView.CoreWebView2.Navigate(lockedUrl);
+                        }
+                        else
+                        {
+                            lockUrlSettled = true;
+                        }
+                    }
+                    else
+                    {
+                        LockUrlRetries = Math.Min(2, LockUrlRetries);
+                        lockUrlSettled = true;
+                    }
+                }
+            }, DispatcherPriority.Background);
         }
 
         private void OnNavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
+            if (lockUrl && lockUrlSettled)
+            {
+                LockUrlRetries = 0;
+            }
+
             IsNavigating = true;
         }
 
@@ -103,10 +137,24 @@ namespace LayoutBrowser.Tab
         public bool LockUrl
         {
             get => lockUrl;
-            set => SetProperty(ref lockUrl, value);
+            set
+            {
+                if (value && !lockUrl)
+                {
+                    lockedUrl = url;
+                }
+
+                SetProperty(ref lockUrl, value);
+            }
         }
 
         public string LockedUrl => lockUrl ? lockedUrl : null;
+
+        public int LockUrlRetries
+        {
+            get => lockUrlRetries;
+            private set => SetProperty(ref lockUrlRetries, value);
+        }
 
         public string Url
         {
@@ -168,7 +216,7 @@ namespace LayoutBrowser.Tab
             await newComplete.Task;
         }
 
-        public async void ExecuteGo()
+        public async Task ExecuteGo()
         {
             await webView.EnsureCoreWebView2Async();
 
@@ -176,6 +224,7 @@ namespace LayoutBrowser.Tab
 
             try
             {
+                BrowserSource = new Uri(url);
                 webView.CoreWebView2.Navigate(url);
             }
             catch (ArgumentException)

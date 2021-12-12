@@ -53,5 +53,10 @@ namespace LayoutBrowser.Tab
         {
             viewModel.NegativeMargin.Enabled = !viewModel.NegativeMargin.Enabled;
         }
+
+        private void OnUrlLockFeatureButtonPressed(object sender, MouseButtonEventArgs e)
+        {
+            viewModel.UrlVm.LockUrl = !viewModel.UrlVm.LockUrl;
+        }
     }
 }

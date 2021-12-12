@@ -87,7 +87,7 @@
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
-                        <MenuItem Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars"
+                        <MenuItem x:Name="negMrgMnu" Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars"
                                   StaysOpenOnClick="True" IsChecked="{Binding NegativeMargin.Enabled}" PreviewMouseDown="OnNegativeMarginToggle">
                             <MenuItem StaysOpenOnClick="True" Header="Enabled" IsCheckable="True" IsChecked="{Binding NegativeMargin.Enabled}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars" />
@@ -344,8 +344,8 @@
                 </TextBox>
 
                 <!-- Feature status buttons -->
-                <Menu x:Name="featureBtnPanel" HorizontalAlignment="Right" FontSize="8" VerticalAlignment="Center" Background="White" BorderThickness="0">
-                    <MenuItem Padding="0" ToolTip="Toggle Negative margin" PreviewMouseDown="OnNegativeMarginFeatureButtonPressed" Visibility="{Binding NegativeMargin.HasNonZeroValues, Converter={StaticResource BoolToVis}}">
+                <Menu x:Name="featureBtnPanel" HorizontalAlignment="Right" FontSize="8" VerticalAlignment="Center" Background="White" BorderThickness="0" Focusable="False">
+                    <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Negative margin" PreviewMouseDown="OnNegativeMarginFeatureButtonPressed" Visibility="{Binding NegativeMargin.HasNonZeroValues, Converter={StaticResource BoolToVis}}">
                         <MenuItem.Header>
                             <Grid>
                                 <TextBlock Text="−M" FontWeight="Bold" Visibility="Hidden" />
@@ -365,10 +365,94 @@
                             </Grid>
                         </MenuItem.Header>
                     </MenuItem>
-                    <MenuItem Padding="0" IsCheckable="True" IsChecked="false">
+                    <MenuItem Focusable="False" Padding="0" PreviewMouseDown="OnUrlLockFeatureButtonPressed">
                         <MenuItem.Header>
-                            <Border BorderThickness="1" BorderBrush="Red">
-                                <TextBlock>123</TextBlock>
+                            <Border BorderThickness="0" ToolTipService.ShowDuration="999999999">
+                                <Border.ToolTip>
+                                    <TextBlock>
+                                        <Run>Toggle URL lock.</Run>
+                                        <Run>
+                                            <Run.Style>
+                                                <Style TargetType="Run">
+                                                    <Setter Property="Text" Value="Currently unlocked." />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrl}" Value="True">
+                                                            <Setter Property="Text" Value="Currently locked." />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Run.Style>
+                                        </Run>
+                                        <Run>
+                                            <Run.Style>
+                                                <Style TargetType="Run">
+                                                    <Setter Property="Text" Value="n/a" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="0">
+                                                            <Setter Property="Text" Value="" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="1">
+                                                            <Setter Property="Text" Value="[Successfully triggered on last navigation.]" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="2">
+                                                            <Setter Property="Text" Value="[First retry.]" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="3">
+                                                            <Setter Property="Text" Value="[Second retry.]" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="4">
+                                                            <Setter Property="Text" Value="[Gave up after three retries.]" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Run.Style>
+                                        </Run>
+                                    </TextBlock>
+                                </Border.ToolTip>
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Magenta" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="0">
+                                                <Setter Property="Background" Value="Transparent" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="1">
+                                                <Setter Property="Background" Value="LightGreen" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="2">
+                                                <Setter Property="Background" Value="Yellow" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="3">
+                                                <Setter Property="Background" Value="Orange" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding UrlVm.LockUrlRetries}" Value="4">
+                                                <Setter Property="Background" Value="IndianRed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid>
+                                    <TextBlock FontWeight="Bold" Visibility="Hidden">
+                                        <Run>🔒</Run><Run FontWeight="Bold">://</Run>
+                                    </TextBlock>
+                                    <TextBlock FontWeight="Bold" Visibility="Hidden">
+                                        <Run>🔓</Run><Run FontWeight="Bold">://</Run>
+                                    </TextBlock>
+
+                                    <TextBlock HorizontalAlignment="Left">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run&gt;🔓&lt;/Run&gt;&lt;Run&gt;://&lt;/Run&gt;" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding UrlVm.LockUrl}" Value="True">
+                                                        <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run&gt;🔒&lt;/Run&gt;&lt;Run FontWeight=&quot;Bold&quot;&gt;://&lt;/Run&gt;" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
                             </Border>
                         </MenuItem.Header>
                     </MenuItem>
