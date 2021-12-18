@@ -111,6 +111,8 @@ namespace LayoutBrowser.Window
         public double WidthNativeInit => widthNativeInit;
         public double HeightNativeInit => heightNativeInit;
 
+        public string UrlList => tabs.Select(t => t.ViewModel.UrlVm.Url).CommaString();
+
         private void OnFirstNavComplete(BrowserTabViewModel vm)
         {
             BackgroundLoadEnabled = true;

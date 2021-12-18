@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -387,7 +388,7 @@ namespace LayoutBrowser.Layout
 
             int index = windows.IndexOf(item);
 
-            if (index <= 0)
+            if (index < 0)
             {
                 return;
             }
@@ -492,6 +493,7 @@ namespace LayoutBrowser.Layout
         }
     }
 
+    [DebuggerDisplay("{ViewModel.Id}, {ViewModel.UrlList}")]
     public class WindowItem
     {
         public WindowItem(LayoutBrowserWindowViewModel viewModel, LayoutBrowserWindow window)
