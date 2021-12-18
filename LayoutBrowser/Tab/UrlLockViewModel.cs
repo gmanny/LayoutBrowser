@@ -34,6 +34,7 @@ namespace LayoutBrowser.Tab
         private string lockedUrl;
         private int lockUrlRetries;
         private bool lockUrlSettled = true;
+        private bool dontRefreshOnBrowserFail;
         
         private WebView2 webView;
 
@@ -48,6 +49,7 @@ namespace LayoutBrowser.Tab
             }
             url = model.url;
             browserSource = model.url.IsNullOrEmpty() ? null : new Uri(model.url);
+            dontRefreshOnBrowserFail = model.dontRefreshOnBrowserFail;
         }
 
         public async Task PlugIntoWebView(WebView2 wv, WebView2MessagingService messenger)
@@ -56,6 +58,22 @@ namespace LayoutBrowser.Tab
 
             wv.NavigationStarting += OnNavigationStarted;
             wv.NavigationCompleted += OnNavigationCompleted;
+            wv.CoreWebView2.ProcessFailed += OnProcessFailed;
+        }
+
+        private void OnProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs e)
+        {
+            if (dontRefreshOnBrowserFail)
+            {
+                return;
+            }
+
+            webView.Dispatcher.BeginInvoke(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3));
+
+                webView.Reload();
+            }, DispatcherPriority.Background);
         }
 
         public void AfterInit()
@@ -67,7 +85,7 @@ namespace LayoutBrowser.Tab
         {
             IsNavigating = false;
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(async () =>
+            webView.Dispatcher.BeginInvoke(async () =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(0.25));
 
@@ -146,6 +164,12 @@ namespace LayoutBrowser.Tab
 
                 SetProperty(ref lockUrl, value);
             }
+        }
+
+        public bool DontRefreshOnBrowserFail
+        {
+            get => dontRefreshOnBrowserFail;
+            set => SetProperty(ref dontRefreshOnBrowserFail, value);
         }
 
         public void LockUrlEx()
@@ -234,12 +258,22 @@ namespace LayoutBrowser.Tab
 
             logger.LogDebug($"Navigating to {url}");
 
+            bool trySearch = false;
             try
             {
                 BrowserSource = new Uri(url);
                 webView.CoreWebView2.Navigate(url);
             }
-            catch (ArgumentException)
+            catch (ArgumentException) 
+            {
+                trySearch = true;
+            }
+            catch (UriFormatException) 
+            {
+                trySearch = true;
+            }
+
+            if (trySearch)
             {
                 string searchUrl = "https://duckduckgo.com/?q=" + HttpUtility.UrlEncode(url);
 

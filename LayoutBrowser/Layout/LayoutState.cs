@@ -55,6 +55,8 @@ namespace LayoutBrowser.Layout
         public TimeSpan scrollDelay = TimeSpan.Zero;
 
         public TabNegativeMargin negativeMargin;
+
+        public bool dontRefreshOnBrowserFail;
     }
 
     public class TabNegativeMargin

@@ -127,7 +127,9 @@ namespace LayoutBrowser.Tab
             scrollDelay = scrollRestore.ScrollDelay,
             scrollX = scrollRestore.LastScroll.X,
             scrollY = scrollRestore.LastScroll.Y,
-            negativeMargin = negativeMargin.ToModel()
+            lockScroll = scrollRestore.LockScroll,
+            negativeMargin = negativeMargin.ToModel(),
+            dontRefreshOnBrowserFail = urlVm.DontRefreshOnBrowserFail
         };
 
         public bool Hidden

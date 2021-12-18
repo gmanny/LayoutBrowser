@@ -72,11 +72,17 @@ namespace LayoutBrowser.Window
             AddShortcut(Key.T, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.ReopenLastClosedItem);
             AddShortcut(Key.U, ModifierKeys.Control | ModifierKeys.Shift, viewModel.ToggleUi);
             AddShortcut(Key.M, ModifierKeys.Control | ModifierKeys.Shift, layoutManager.MinimizeAll);
+            AddShortcut(Key.F, ModifierKeys.Control | ModifierKeys.Shift, ToFront);
 
             Dispatcher.BeginInvoke(() =>
             {
                 tabBar.ScrollIntoView(viewModel.CurrentTab);
             }, DispatcherPriority.Background);
+        }
+
+        private void ToFront()
+        {
+            BringToFrontWithoutFocus();
         }
 
         private Rectangle NativeRect()

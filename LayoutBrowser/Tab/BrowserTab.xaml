@@ -159,6 +159,7 @@
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
+                        <MenuItem IsCheckable="True" IsChecked="{Binding UrlVm.DontRefreshOnBrowserFail, Mode=TwoWay}" Header="Don't refresh on browser fail" ToolTip="Don't auto-refresh this tab if the browser process fails/crashes for some reason." ToolTipService.ShowDuration="999999999" />
 
                         <Separator />
                         <!-- Per-window settings -->
