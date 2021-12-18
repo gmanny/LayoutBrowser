@@ -148,6 +148,18 @@ namespace LayoutBrowser.Tab
             }
         }
 
+        public void LockUrlEx()
+        {
+            if (lockUrl)
+            {
+                return;
+            }
+
+            SetProperty(ref lockUrl, true, nameof(LockUrl));
+
+            webView.CoreWebView2.Navigate(lockedUrl);
+        }
+
         public string LockedUrl => lockUrl ? lockedUrl : null;
 
         public int LockUrlRetries

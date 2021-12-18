@@ -77,6 +77,8 @@
                     <ContextMenu>
                         <!-- Per-tab settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
+                        <MenuItem IsCheckable="True" IsChecked="{Binding UrlVm.LockUrl, Mode=TwoWay}" Header="Lock URL" ToolTip="Prevent the URL from being changed by the website due to redirects." ToolTipService.ShowDuration="999999999" />
+                        <MenuItem IsCheckable="True" IsChecked="{Binding ScrollRestore.LockScroll, Mode=TwoWay}" Header="Lock Scroll" ToolTip="Remember the scroll position at the time of this option toggle and always restore to that scroll position." ToolTipService.ShowDuration="999999999" />
                         <MenuItem IsCheckable="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hide content" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
                         <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
                             <MenuItem.Header>
@@ -346,6 +348,16 @@
                 <!-- Feature status buttons -->
                 <Menu x:Name="featureBtnPanel" HorizontalAlignment="Right" FontSize="8" VerticalAlignment="Center" Background="White" BorderThickness="0" Focusable="False">
                     <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Negative margin" PreviewMouseDown="OnNegativeMarginFeatureButtonPressed" Visibility="{Binding NegativeMargin.HasNonZeroValues, Converter={StaticResource BoolToVis}}">
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding NegativeMargin.Enabled}" Value="True">
+                                        <Setter Property="BorderBrush" Value="ForestGreen" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </MenuItem.Style>
                         <MenuItem.Header>
                             <Grid>
                                 <TextBlock Text="−M" FontWeight="Bold" Visibility="Hidden" />
@@ -366,6 +378,17 @@
                         </MenuItem.Header>
                     </MenuItem>
                     <MenuItem Focusable="False" Padding="0" PreviewMouseDown="OnUrlLockFeatureButtonPressed">
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding UrlVm.LockUrl}" Value="True">
+                                        <Setter Property="BorderBrush" Value="ForestGreen" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </MenuItem.Style>
                         <MenuItem.Header>
                             <Border BorderThickness="0" ToolTipService.ShowDuration="999999999">
                                 <Border.ToolTip>
@@ -434,19 +457,16 @@
 
                                 <Grid>
                                     <TextBlock FontWeight="Bold" Visibility="Hidden">
-                                        <Run>🔒</Run><Run FontWeight="Bold">://</Run>
-                                    </TextBlock>
-                                    <TextBlock FontWeight="Bold" Visibility="Hidden">
-                                        <Run>🔓</Run><Run FontWeight="Bold">://</Run>
+                                        <Run FontSize="6" BaselineAlignment="Center">🔒</Run><Run FontWeight="Bold">Url</Run>
                                     </TextBlock>
 
-                                    <TextBlock HorizontalAlignment="Left">
+                                    <TextBlock HorizontalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run&gt;🔓&lt;/Run&gt;&lt;Run&gt;://&lt;/Run&gt;" />
+                                                <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run FontSize=&quot;6&quot; BaselineAlignment=&quot;Center&quot;&gt;🔓&lt;/Run&gt;&lt;Run&gt;Url&lt;/Run&gt;" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding UrlVm.LockUrl}" Value="True">
-                                                        <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run&gt;🔒&lt;/Run&gt;&lt;Run FontWeight=&quot;Bold&quot;&gt;://&lt;/Run&gt;" />
+                                                        <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run FontSize=&quot;6&quot; BaselineAlignment=&quot;Center&quot;&gt;🔒&lt;/Run&gt;&lt;Run FontWeight=&quot;Bold&quot;&gt;Url&lt;/Run&gt;" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -454,6 +474,39 @@
                                     </TextBlock>
                                 </Grid>
                             </Border>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Lock Scroll" PreviewMouseDown="OnLockScrollFeatureButtonPressed">
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ScrollRestore.LockScroll}" Value="True">
+                                        <Setter Property="BorderBrush" Value="ForestGreen" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </MenuItem.Style>
+                        <MenuItem.Header>
+                            <Grid>
+                                <TextBlock FontWeight="Bold" Visibility="Hidden">
+                                    <Run FontSize="6" BaselineAlignment="Center">🔒</Run><Run FontWeight="Bold">Scr</Run>
+                                </TextBlock>
+
+                                <TextBlock HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run FontSize=&quot;6&quot; BaselineAlignment=&quot;Center&quot;&gt;🔓&lt;/Run&gt;&lt;Run&gt;Scr&lt;/Run&gt;" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ScrollRestore.LockScroll}" Value="True">
+                                                    <Setter Property="utils:FormattedTextBlockUtil.FormattedText" Value="&lt;Run FontSize=&quot;6&quot; BaselineAlignment=&quot;Center&quot;&gt;🔒&lt;/Run&gt;&lt;Run FontWeight=&quot;Bold&quot;&gt;Scr&lt;/Run&gt;" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
                         </MenuItem.Header>
                     </MenuItem>
                 </Menu>

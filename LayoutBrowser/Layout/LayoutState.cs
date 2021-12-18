@@ -37,6 +37,8 @@ namespace LayoutBrowser.Layout
     public class LayoutWindowTab
     {
         public string url;
+        public bool lockUrl;
+
         public string title = "New Tab";
         public string overrideTitle;
         public string profile = ProfileManager.DefaultProfile;
@@ -49,11 +51,10 @@ namespace LayoutBrowser.Layout
         public TimeSpan autoRefreshTime = TimeSpan.Zero;
 
         public double scrollX, scrollY;
+        public bool lockScroll;
         public TimeSpan scrollDelay = TimeSpan.Zero;
 
         public TabNegativeMargin negativeMargin;
-
-        public bool lockUrl;
     }
 
     public class TabNegativeMargin

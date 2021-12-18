@@ -28,11 +28,16 @@ namespace LayoutBrowser.Tab
         private WebView2 webView;
 
         private Point lastScroll;
+        private Point lockedScroll;
+
+        private bool lockScroll;
 
         public ScrollRestoreViewModel(LayoutWindowTab model, ILogger logger)
         {
             this.logger = logger;
             lastScroll = new Point(model.scrollX, model.scrollY);
+            lockedScroll = lastScroll;
+            lockScroll = model.lockScroll;
             scrollRestore = lastScroll;
             scrollDelay = model.scrollDelay;
         }
@@ -57,7 +62,21 @@ namespace LayoutBrowser.Tab
             set => SetProperty(ref scrollDelay, value);
         }
 
-        public Point LastScroll => lastScroll;
+        public Point LastScroll => lockScroll ? lockedScroll : lastScroll;
+
+        public bool LockScroll
+        {
+            get => lockScroll;
+            set
+            {
+                if (value && !lockScroll)
+                {
+                    lockedScroll = lastScroll;
+                }
+
+                SetProperty(ref lockScroll, value);
+            }
+        }
 
         private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
@@ -79,7 +98,7 @@ namespace LayoutBrowser.Tab
             lastScroll = new Point(pt.x, pt.y);
         }
 
-        public void RememberScroll() => scrollRestore = lastScroll;
+        public void RememberScroll() => scrollRestore = LastScroll;
 
         private async void RestoreScroll()
         {
