@@ -95,21 +95,51 @@ namespace LayoutBrowser.Window
             return new Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top);
         }
 
-        private void FirstBackgroundDispatch()
+        private async void FirstBackgroundDispatch()
         {
-            if (!double.IsNaN(viewModel.LeftNativeInit))
+            if (double.IsNaN(viewModel.LeftNativeInit))
             {
-                SetWindowPos(CachedHandle, IntPtr.Zero, (int) viewModel.LeftNativeInit, (int) viewModel.TopNativeInit, (int) viewModel.WidthNativeInit, (int) viewModel.HeightNativeInit, SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+                // no native size saved in settings, restore managed window size
+                PresentationSource source = PresentationSource.FromVisual(this);
+                CompositionTarget ct = source?.CompositionTarget;
+                double dpiX = ct?.TransformToDevice.M11 ?? 1.0;
+                double dpiY = ct?.TransformToDevice.M22 ?? 1.0;
 
-                return;
+                SetWindowPos(CachedHandle, IntPtr.Zero, (int) (viewModel.LeftInit*dpiX), (int) (viewModel.TopInit*dpiY), (int) (viewModel.WidthInit*dpiX), (int) (viewModel.HeightInit*dpiY), SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+            }
+            else
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    SetWindowPos(CachedHandle, IntPtr.Zero, (int) viewModel.LeftNativeInit, (int) viewModel.TopNativeInit, (int) viewModel.WidthNativeInit, (int) viewModel.HeightNativeInit, SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+
+                    await Task.Delay(TimeSpan.FromSeconds(0.2));
+
+                    Rectangle rect = NativeRect();
+
+                    if (rect.Left == (int) viewModel.LeftNativeInit && rect.Top == (int) viewModel.TopNativeInit &&
+                        rect.Width == (int) viewModel.WidthNativeInit && rect.Height == (int) viewModel.HeightNativeInit)
+                    {
+                        if (i > 0)
+                        {
+                            logger.LogDebug($"Wnd #{myIndex} {viewModel.Id} completed initial layout in {i + 1} steps");
+                        }
+
+                        break;
+                    }
+                    
+                    if (i > 5)
+                    {
+                        logger.LogDebug($"Wnd #{myIndex} {viewModel.Id} native rect discrepancy: left = {rect.Left - (int) viewModel.LeftNativeInit}, top = {rect.Top - (int) viewModel.TopNativeInit}, width = {rect.Width - (int) viewModel.WidthNativeInit}, height = {rect.Height - (int) viewModel.HeightNativeInit}");
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
             }
 
-            PresentationSource source = PresentationSource.FromVisual(this);
-            CompositionTarget ct = source?.CompositionTarget;
-            double dpiX = ct?.TransformToDevice.M11 ?? 1.0;
-            double dpiY = ct?.TransformToDevice.M22 ?? 1.0;
+            await Task.Delay(TimeSpan.FromSeconds(0.2));
 
-            SetWindowPos(CachedHandle, IntPtr.Zero, (int) (viewModel.LeftInit*dpiX), (int) (viewModel.TopInit*dpiY), (int) (viewModel.WidthInit*dpiX), (int) (viewModel.HeightInit*dpiY), SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER);
+            viewModel.UpdateNativeSize();
         }
 
         private static void OnTopmostChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

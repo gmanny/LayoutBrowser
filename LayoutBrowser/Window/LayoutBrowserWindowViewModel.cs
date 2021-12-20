@@ -429,7 +429,7 @@ namespace LayoutBrowser.Window
             }
         }
 
-        private void UpdateNativeSize()
+        public void UpdateNativeSize()
         {
             Rectangle? nativeRect = NativeRect?.Invoke();
 
