@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace LayoutBrowser.Layout
@@ -35,6 +36,27 @@ namespace LayoutBrowser.Layout
         public string iconPath;
 
         public bool? overrideToBack;
+
+        public LayoutWindow Copy() => new LayoutWindow
+        {
+            tabs = tabs.Select(t => t.Copy()).ToList(),
+            activeTabIndex = activeTabIndex,
+            windowState = windowState,
+            preMinimizedWindowState = preMinimizedWindowState,
+            left = left,
+            top = top,
+            width = width,
+            height = height,
+            leftNative = leftNative,
+            topNative = topNative,
+            widthNative = widthNative,
+            heightNative = heightNative,
+            uiHidden = uiHidden,
+            notInLayout = notInLayout,
+            // skipping id copy
+            iconPath = iconPath,
+            overrideToBack = overrideToBack
+        };
     }
 
     public class LayoutWindowTab
@@ -60,6 +82,25 @@ namespace LayoutBrowser.Layout
         public TabNegativeMargin negativeMargin;
 
         public bool dontRefreshOnBrowserFail;
+
+        public LayoutWindowTab Copy() => new LayoutWindowTab
+        {
+            url = url,
+            lockUrl = lockUrl,
+            title = title,
+            overrideTitle = overrideTitle,
+            profile = profile,
+            zoomFactor = zoomFactor,
+            hidden = hidden,
+            autoRefreshEnabled = autoRefreshEnabled,
+            autoRefreshTime = autoRefreshTime,
+            scrollX = scrollX,
+            scrollY = scrollY,
+            scrollDelay = scrollDelay,
+            lockScroll = lockScroll,
+            negativeMargin = negativeMargin.Copy(),
+            dontRefreshOnBrowserFail = dontRefreshOnBrowserFail
+        };
     }
 
     public class TabNegativeMargin
@@ -67,6 +108,15 @@ namespace LayoutBrowser.Layout
         public bool enabled;
         public double left, top, right, bottom;
         public bool leftRightNativeMode;
+
+        public TabNegativeMargin Copy() => new TabNegativeMargin
+        {
+            enabled = enabled,
+            left = left,
+            top = top,
+            right = right,
+            bottom = bottom
+        };
     }
 
     public class ClosedItemHistory

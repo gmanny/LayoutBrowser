@@ -160,6 +160,7 @@
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem IsCheckable="True" IsChecked="{Binding UrlVm.DontRefreshOnBrowserFail, Mode=TwoWay}" Header="Don't refresh on browser fail" ToolTip="Don't auto-refresh this tab if the browser process fails/crashes for some reason." ToolTipService.ShowDuration="999999999" />
+                        <MenuItem Header="Duplicate tab" Click="DuplicateTabClick" />
 
                         <Separator />
                         <!-- Per-window settings -->
@@ -204,6 +205,7 @@
                             <MenuItem StaysOpenOnClick="True" Header="Use ToBack" IsCheckable="True" IsChecked="{Binding ParentWindow.OverrideLayoutUsingToBack}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="If checked and layout behavior override enabled, window is always sent to back when window layout is restored for a `Window order locked` setting. If unchecked, the window is sent to the front." />
                         </MenuItem>
+                        <MenuItem Header="Duplicate window" Click="DuplicateWindowClick" />
 
                         <Separator />
                         <!-- Global settings -->

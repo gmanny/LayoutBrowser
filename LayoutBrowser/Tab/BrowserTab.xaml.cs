@@ -1,6 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LayoutBrowser.Layout;
 using LayoutBrowser.Window;
 using Microsoft.Web.WebView2.Core;
 
@@ -14,10 +16,12 @@ namespace LayoutBrowser.Tab
     public partial class BrowserTab
     {
         private readonly BrowserTabViewModel viewModel;
+        private readonly LayoutManager layoutManager;
 
-        public BrowserTab(BrowserTabViewModel viewModel)
+        public BrowserTab(BrowserTabViewModel viewModel, LayoutManager layoutManager)
         {
             this.viewModel = viewModel;
+            this.layoutManager = layoutManager;
 
             InitializeComponent();
 
@@ -87,6 +91,27 @@ namespace LayoutBrowser.Tab
                 e.Handled = true;
                 return;
             }
+        }
+
+        private void DuplicateTabClick(object sender, RoutedEventArgs e)
+        {
+            WindowTabItem tab = viewModel.ParentWindow.AddTab(viewModel.ToModel().Copy());
+
+            viewModel.ParentWindow.CurrentTab = tab;
+        }
+
+        private void DuplicateWindowClick(object sender, RoutedEventArgs e)
+        {
+            LayoutWindow model = viewModel.ParentWindow.ToModel().Copy();
+            model.top += 50;
+            model.left += 50;
+
+            model.topNative = Double.NaN;
+            model.leftNative = Double.NaN;
+            model.widthNative = Double.NaN;
+            model.heightNative = Double.NaN;
+
+            layoutManager.AddWindow(model);
         }
     }
 }

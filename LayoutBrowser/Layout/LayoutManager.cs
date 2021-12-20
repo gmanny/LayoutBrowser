@@ -231,7 +231,7 @@ namespace LayoutBrowser.Layout
                 {
                     WindowItem wnd = windows[i];
                     if (wnd.ViewModel.NotInLayout ||
-                        wnd.ViewModel.OverrideLayoutMethod ? wnd.ViewModel.OverrideLayoutUsingToBack : layoutRestoreUsingToBack)
+                        (wnd.ViewModel.OverrideLayoutMethod ? wnd.ViewModel.OverrideLayoutUsingToBack : layoutRestoreUsingToBack))
                     {
                         continue;
                     }
