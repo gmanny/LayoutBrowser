@@ -32,5 +32,16 @@ namespace LayoutBrowser.Layout
                 OnPropertyChanged();
             }
         }
+
+        public bool StoreClosedHistory
+        {
+            get => layoutManager.StoreClosedHistory;
+            set
+            {
+                layoutManager.StoreClosedHistory = value;
+
+                OnPropertyChanged();
+            }
+        }
     }
 }

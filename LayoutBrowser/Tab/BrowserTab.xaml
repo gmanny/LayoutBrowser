@@ -210,6 +210,7 @@
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
                         <MenuItem Header="Window order locked" IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
                         <MenuItem Header="Maintain order with ToBack" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
+                        <MenuItem Header="Store closed tab history" ToolTipService.ShowDuration="999999999" ToolTip="Save closed windows and tabs to disk between restarts. This mimics chromium's behavior, but stores browsing history in plain text on disk." IsCheckable="True" IsChecked="{Binding LayoutMgr.StoreClosedHistory, Mode=TwoWay}" />
                         <MenuItem Header="Quit" InputGestureText="Ctrl+Q/Alt+Q" Command="{Binding ParentWindow.QuitCommand}" />
                     </ContextMenu>
                 </Button.ContextMenu>
@@ -549,7 +550,7 @@
         </DockPanel>
 
         <!-- Black panel which is displayed when tab contents are hidden -->
-        <Grid Grid.Row="1" Background="Black">
+        <Grid Grid.Row="1" Background="Black" MouseUp="TabHiddenBg_MouseUp">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed" />

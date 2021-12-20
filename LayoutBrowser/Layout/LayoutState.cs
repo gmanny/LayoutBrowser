@@ -11,6 +11,7 @@ namespace LayoutBrowser.Layout
         public bool locked;
         public bool minimizedAll;
         public bool restoreUsingToBack;
+        public bool storeClosedHistory;
     }
 
     public class LayoutWindow

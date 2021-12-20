@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -35,6 +34,8 @@ namespace LayoutBrowser.Layout
         private bool layoutLocked;
         private bool minimizedAll;
         private bool layoutRestoreUsingToBack;
+        private bool storeClosedHistory;
+
         private bool stopping;
 
         private bool inMinimizeAll;
@@ -65,6 +66,12 @@ namespace LayoutBrowser.Layout
         {
             get => layoutRestoreUsingToBack;
             set => layoutRestoreUsingToBack = value;
+        }
+
+        public bool StoreClosedHistory
+        {
+            get => storeClosedHistory;
+            set => storeClosedHistory = value;
         }
 
 #pragma warning disable 1998
@@ -120,11 +127,20 @@ namespace LayoutBrowser.Layout
                 windows = windows.Select(w => w.ViewModel.ToModel()).ToList(),
                 locked = layoutLocked,
                 minimizedAll = minimizedAll,
-                restoreUsingToBack = layoutRestoreUsingToBack
+                restoreUsingToBack = layoutRestoreUsingToBack,
+                storeClosedHistory = storeClosedHistory
             };
 
             Settings.Default.Layout = ser.Serialize(state);
-            Settings.Default.ClosedHistory = ser.Serialize(closedItems);
+            if (storeClosedHistory)
+            {
+                Settings.Default.ClosedHistory = ser.Serialize(closedItems);
+            }
+            else
+            {
+                Settings.Default.ClosedHistory = null;
+            }
+
             Settings.Default.Save();
         }
 
@@ -157,6 +173,7 @@ namespace LayoutBrowser.Layout
             layoutLocked = state.locked;
             minimizedAll = state.minimizedAll;
             LayoutRestoreUsingToBack = state.restoreUsingToBack;
+            storeClosedHistory = state.storeClosedHistory;
 
             Task.WhenAll(layoutRestoreComplete).OnComplete(_ => SaveLayout());
         }

@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LayoutBrowser.Window;
 using Microsoft.Web.WebView2.Core;
 
 namespace LayoutBrowser.Tab
@@ -74,6 +75,17 @@ namespace LayoutBrowser.Tab
             finally
             {
                 e.Handled = true;
+            }
+        }
+
+        private void TabHiddenBg_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                viewModel.Hidden = !viewModel.Hidden;
+
+                e.Handled = true;
+                return;
             }
         }
     }
