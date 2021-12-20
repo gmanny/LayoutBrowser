@@ -32,6 +32,8 @@ namespace LayoutBrowser.Layout
         public Guid id = Guid.NewGuid();
 
         public string iconPath;
+
+        public bool? overrideToBack;
     }
 
     public class LayoutWindowTab

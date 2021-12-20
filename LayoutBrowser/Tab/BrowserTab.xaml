@@ -170,6 +170,40 @@
                                 <Image Source="{Binding ParentWindow.IconPath}" />
                             </MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem ToolTipService.ShowDuration="999999999" ToolTip="Override window order maintenance behavior for the current window"
+                                  StaysOpenOnClick="True" IsChecked="{Binding ParentWindow.OverrideLayoutMethod}" PreviewMouseDown="OnNegativeMarginToggle">
+                            <MenuItem.Style>
+                                <Style TargetType="MenuItem">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ParentWindow.OverrideLayoutUsingToBack}" Value="False">
+                                            <Setter Property="Header">
+                                                <Setter.Value>
+                                                    <TextBlock><Run>Override layout:</Run> <Run FontWeight="Bold">Use ToFront</Run></TextBlock>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ParentWindow.OverrideLayoutUsingToBack}" Value="True">
+                                            <Setter Property="Header">
+                                                <Setter.Value>
+                                                    <TextBlock><Run>Override layout:</Run> <Run FontWeight="Bold">Use ToBack</Run></TextBlock>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ParentWindow.OverrideLayoutMethod}" Value="False">
+                                            <Setter Property="Header">
+                                                <Setter.Value>
+                                                    <TextBlock><Run>Override layout</Run></TextBlock>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </MenuItem.Style>
+
+                            <MenuItem StaysOpenOnClick="True" Header="Enabled" IsCheckable="True" IsChecked="{Binding ParentWindow.OverrideLayoutMethod}" />
+                            <MenuItem StaysOpenOnClick="True" Header="Use ToBack" IsCheckable="True" IsChecked="{Binding ParentWindow.OverrideLayoutUsingToBack}"
+                                      ToolTipService.ShowDuration="999999999" ToolTip="If checked and layout behavior override enabled, window is always sent to back when window layout is restored for a `Window order locked` setting. If unchecked, the window is sent to the front." />
+                        </MenuItem>
 
                         <Separator />
                         <!-- Global settings -->

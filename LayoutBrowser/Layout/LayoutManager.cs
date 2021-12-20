@@ -3,15 +3,18 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using LanguageExt;
 using LayoutBrowser.Window;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Monitor.ServiceCommon.Services;
 using Monitor.ServiceCommon.Util;
 using MonitorCommon;
+using MonitorCommon.Tasks;
 using Newtonsoft.Json;
 
 namespace LayoutBrowser.Layout
@@ -141,19 +144,24 @@ namespace LayoutBrowser.Layout
             List<LayoutWindow> copy = state.windows.ToList();
             copy.Reverse();
 
+            List<Task> layoutRestoreComplete = new List<Task>(copy.Count);
             foreach (LayoutWindow window in copy)
             {
-                AddWindow(window);
+                (_, Task layoutComplete) = AddWindow(window);
+
+                layoutRestoreComplete.Add(layoutComplete);
 
                 logger.LogInformation($"Restored window {window.id}");
             }
 
-            LayoutLocked = state.locked;
+            layoutLocked = state.locked;
             minimizedAll = state.minimizedAll;
             LayoutRestoreUsingToBack = state.restoreUsingToBack;
+
+            Task.WhenAll(layoutRestoreComplete).OnComplete(_ => SaveLayout());
         }
         
-        public WindowItem AddWindow(LayoutWindow window, bool noActivation = false)
+        public (WindowItem wnd, Task layoutComplete) AddWindow(LayoutWindow window, bool noActivation = false)
         {
             LayoutBrowserWindowViewModel vm = viewModelFactory.ForModel(window);
             LayoutBrowserWindow w = windowFactory.ForViewModel(vm);
@@ -166,8 +174,11 @@ namespace LayoutBrowser.Layout
                 logger.LogDebug($"Found window with duplicate ID {item.ViewModel.Id}");
             }
 
+            TaskCompletionSource<Unit> layoutComplete = new TaskCompletionSource<Unit>();
+
             w.Activated += (s, e) => OnActivated(item);
             w.Closed += (s, e) => OnClosed(item);
+            w.LayoutRestoreComplete += () => layoutComplete.SetResult(Unit.Default);
             vm.WindowBecameEmpty += _ => w.Close();
             vm.OpenNewWindow += OnOpenNewWindow;
             vm.PopoutRequested += (wn, t) => PopoutTab(t, wn);
@@ -180,7 +191,7 @@ namespace LayoutBrowser.Layout
 
             w.Show();
 
-            return item;
+            return (item, layoutComplete.Task);
         }
         
         private void RestoreWindowOrder(WindowItem item)
@@ -202,7 +213,8 @@ namespace LayoutBrowser.Layout
                 for (int i = windows.Count - 1; i >= 0; i--)
                 {
                     WindowItem wnd = windows[i];
-                    if (wnd.ViewModel.NotInLayout)
+                    if (wnd.ViewModel.NotInLayout ||
+                        wnd.ViewModel.OverrideLayoutMethod ? wnd.ViewModel.OverrideLayoutUsingToBack : layoutRestoreUsingToBack)
                     {
                         continue;
                     }
@@ -216,7 +228,8 @@ namespace LayoutBrowser.Layout
                 for (int i = 0; i < windows.Count; i++)
                 {
                     WindowItem wnd = windows[i];
-                    if (wnd.ViewModel.NotInLayout)
+                    if (wnd.ViewModel.NotInLayout ||
+                        !(wnd.ViewModel.OverrideLayoutMethod ? wnd.ViewModel.OverrideLayoutUsingToBack : layoutRestoreUsingToBack))
                     {
                         continue;
                     }
@@ -227,14 +240,8 @@ namespace LayoutBrowser.Layout
 
             void RestoreLayoutGen()
             {
-                if (layoutRestoreUsingToBack)
-                {
-                    RestoreLayoutBack();
-                }
-                else
-                {
-                    RestoreLayoutFront();
-                }
+                RestoreLayoutBack();
+                RestoreLayoutFront();
             }
 
             RestoreLayoutGen();
@@ -317,7 +324,7 @@ namespace LayoutBrowser.Layout
 
         private void PopoutTab(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow)
         {
-            WindowItem wnd = AddWindow(new LayoutWindow
+            (WindowItem wnd, _) = AddWindow(new LayoutWindow
             {
                 left = parentWindow.Left + 30,
                 top = parentWindow.Top + 30,
@@ -332,7 +339,7 @@ namespace LayoutBrowser.Layout
 
         private async Task OnOpenNewWindow(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
         {
-            WindowItem wnd = AddWindow(new LayoutWindow
+            (WindowItem wnd, _) = AddWindow(new LayoutWindow
             {
                 tabs =
                 {
@@ -476,7 +483,7 @@ namespace LayoutBrowser.Layout
                         }
                         else
                         {
-                            wnd = AddWindow(new LayoutWindow());
+                            (wnd, _) = AddWindow(new LayoutWindow());
                         }
                     }
 

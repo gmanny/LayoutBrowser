@@ -95,6 +95,8 @@ namespace LayoutBrowser.Window
             return new Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top);
         }
 
+        public event Action LayoutRestoreComplete;
+
         private async void FirstBackgroundDispatch()
         {
             if (double.IsNaN(viewModel.LeftNativeInit))
@@ -140,6 +142,10 @@ namespace LayoutBrowser.Window
             await Task.Delay(TimeSpan.FromSeconds(0.2));
 
             viewModel.UpdateNativeSize();
+
+            await Task.Delay(TimeSpan.FromSeconds(0.2));
+
+            LayoutRestoreComplete?.Invoke();
         }
 
         private static void OnTopmostChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

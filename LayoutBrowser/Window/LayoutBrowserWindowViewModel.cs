@@ -52,6 +52,8 @@ namespace LayoutBrowser.Window
         private bool notInLayout;
         private bool backgroundLoadEnabled;
         private string iconPath;
+        private bool overrideLayoutMethod;
+        private bool overrideLayoutUsingToBack;
 
         public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
         {
@@ -74,6 +76,11 @@ namespace LayoutBrowser.Window
             uiHidden = model.uiHidden;
             notInLayout = model.notInLayout;
             iconPath = model.iconPath;
+            overrideLayoutMethod = model.overrideToBack != null;
+            if (model.overrideToBack != null)
+            {
+                overrideLayoutUsingToBack = model.overrideToBack.Value;
+            }
 
             tabs.CollectionChanged += OnTabsChanged;
 
@@ -151,6 +158,18 @@ namespace LayoutBrowser.Window
         }
 
         public bool UiVisible => !uiHidden;
+
+        public bool OverrideLayoutMethod
+        {
+            get => overrideLayoutMethod;
+            set => SetProperty(ref overrideLayoutMethod, value);
+        }
+
+        public bool OverrideLayoutUsingToBack
+        {
+            get => overrideLayoutUsingToBack;
+            set => SetProperty(ref overrideLayoutUsingToBack, value);
+        }
 
         private void OnTabsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -325,7 +344,8 @@ namespace LayoutBrowser.Window
             notInLayout = notInLayout,
             tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
             activeTabIndex = tabs.IndexOf(CurrentTab),
-            iconPath = iconPath
+            iconPath = iconPath,
+            overrideToBack = overrideLayoutMethod ? overrideLayoutUsingToBack : (bool?) null
         };
 
         public ObservableCollection<WindowTabItem> Tabs => tabs;
