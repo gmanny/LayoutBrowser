@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 
@@ -20,12 +21,25 @@ namespace LayoutBrowser.Layout
         public List<LayoutWindowTab> tabs = new List<LayoutWindowTab>();
         public int activeTabIndex;
 
+        [DefaultValue(WindowState.Normal)]
         public WindowState windowState = WindowState.Normal;
+
+        [DefaultValue(WindowState.Normal)]
         public WindowState preMinimizedWindowState = WindowState.Normal;
+
+        [DefaultValue(100d)]
         public double left = 100;
+        
+        [DefaultValue(100d)]
         public double top = 100;
+        
+        [DefaultValue(800d)]
         public double width = 800;
+        
+        [DefaultValue(500d)]
         public double height = 500;
+        
+        [DefaultValue(Double.NaN)]
         public double leftNative = Double.NaN, topNative = Double.NaN, widthNative = Double.NaN, heightNative = Double.NaN;
 
         public bool uiHidden;
@@ -66,8 +80,11 @@ namespace LayoutBrowser.Layout
 
         public string title = "New Tab";
         public string overrideTitle;
+        
+        [DefaultValue(ProfileManager.DefaultProfile)]
         public string profile = ProfileManager.DefaultProfile;
 
+        [DefaultValue(1d)]
         public double zoomFactor = 1;
 
         public bool hidden;

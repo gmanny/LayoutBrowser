@@ -74,6 +74,11 @@ namespace LayoutBrowser.Layout
             set => storeClosedHistory = value;
         }
 
+        /// <summary>
+        /// !Warning! Exposed for development purposes only!
+        /// </summary>
+        public IEnumerable<WindowItem> Windows => windows;
+
 #pragma warning disable 1998
         private async Task OnAppStop()
 #pragma warning restore 1998
@@ -118,6 +123,27 @@ namespace LayoutBrowser.Layout
             }
 
             return state;
+        }
+
+        public Task UpdateNativeSizes()
+        {
+            var tasks = new List<Task>();
+
+            foreach (WindowItem wnd in windows)
+            {
+                TaskCompletionSource<Unit> tcs = new TaskCompletionSource<Unit>();
+
+                wnd.Window.Dispatcher.BeginInvoke(() =>
+                {
+                    wnd.ViewModel.UpdateNativeSize();
+
+                    tcs.SetResult(Unit.Default);
+                }, DispatcherPriority.Background);
+
+                tasks.Add(tcs.Task);
+            }
+
+            return Task.WhenAll(tasks);
         }
 
         public void SaveLayout()
@@ -175,7 +201,12 @@ namespace LayoutBrowser.Layout
             LayoutRestoreUsingToBack = state.restoreUsingToBack;
             storeClosedHistory = state.storeClosedHistory;
 
-            Task.WhenAll(layoutRestoreComplete).OnComplete(_ => SaveLayout());
+            Task.WhenAll(layoutRestoreComplete).OnComplete(_ =>
+            {
+                logger.LogInformation("Layout fully restored");
+                
+                //SaveLayout();
+            });
         }
         
         public (WindowItem wnd, Task layoutComplete) AddWindow(LayoutWindow window, bool noActivation = false)

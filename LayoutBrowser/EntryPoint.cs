@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using LayoutBrowser.Layout;
 using LayoutBrowser.Window;
 using Ninject;
@@ -17,7 +18,7 @@ namespace LayoutBrowser
             var ep = new WpfAppEntryPoint<App, LayoutBrowserWindow>(new List<INinjectModule>
             {
                 new LayoutBrowserAppModule()
-            }, args, singleInstance: true, showConsole: Debugger.IsAttached);
+            }, args, singleInstance: true, showConsole: Debugger.IsAttached || args.Any(a => a.ToLowerInvariant().Contains("console")));
 
             ep.OverrideStartupSequence(LayoutRestoreStartup);
 

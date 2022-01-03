@@ -13,6 +13,7 @@ namespace LayoutBrowser
         {
             Bind<LayoutManager>().ToSelf().InSingletonScope();
             Bind<ProfileManager>().ToSelf().InSingletonScope();
+            Bind<ConsoleCommandProvider>().ToSelf().AsEagerSingleton();
 
             // UI
             Bind<App>().ToSelf().InSingletonScope();

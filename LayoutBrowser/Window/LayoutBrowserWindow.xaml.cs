@@ -26,16 +26,12 @@ namespace LayoutBrowser.Window
     /// </summary>
     public partial class LayoutBrowserWindow
     {
-        private static int windowIndex;
-
         private readonly LayoutBrowserWindowViewModel viewModel;
         private readonly LayoutManager layoutManager;
         private readonly ILogger logger;
 
         private IntPtr? cachedHandle;
         private bool cachedTopMost;
-
-        private int myIndex = Interlocked.Increment(ref windowIndex);
 
         static LayoutBrowserWindow()
         {
@@ -124,7 +120,7 @@ namespace LayoutBrowser.Window
                     {
                         if (i > 0)
                         {
-                            logger.LogDebug($"Wnd #{myIndex} {viewModel.Id} completed initial layout in {i + 1} steps");
+                            logger.LogDebug($"Wnd #{viewModel.Index} {viewModel.Id} completed initial layout in {i + 1} steps");
                         }
 
                         break;
@@ -132,7 +128,7 @@ namespace LayoutBrowser.Window
                     
                     if (i > 5)
                     {
-                        logger.LogDebug($"Wnd #{myIndex} {viewModel.Id} native rect discrepancy: left = {rect.Left - (int) viewModel.LeftNativeInit}, top = {rect.Top - (int) viewModel.TopNativeInit}, width = {rect.Width - (int) viewModel.WidthNativeInit}, height = {rect.Height - (int) viewModel.HeightNativeInit}");
+                        logger.LogDebug($"Wnd #{viewModel.Index} {viewModel.Id} native rect discrepancy: left = {rect.Left - (int) viewModel.LeftNativeInit}, top = {rect.Top - (int) viewModel.TopNativeInit}, width = {rect.Width - (int) viewModel.WidthNativeInit}, height = {rect.Height - (int) viewModel.HeightNativeInit}");
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
@@ -162,7 +158,7 @@ namespace LayoutBrowser.Window
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            logger.LogDebug($"Window #{myIndex} DPI changed x:{oldDpi.DpiScaleX}/y:{oldDpi.DpiScaleY} -> x:{newDpi.DpiScaleX}/y:{newDpi.DpiScaleY}");
+            logger.LogDebug($"Window #{viewModel.Index} DPI changed x:{oldDpi.DpiScaleX}/y:{oldDpi.DpiScaleY} -> x:{newDpi.DpiScaleX}/y:{newDpi.DpiScaleY}");
 
             WiggleBrowser();
         }
@@ -221,7 +217,7 @@ namespace LayoutBrowser.Window
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            logger.LogDebug($"Window #{myIndex} source initialized");
+            logger.LogDebug($"Window #{viewModel.Index} source initialized");
 
             base.OnSourceInitialized(e);
 

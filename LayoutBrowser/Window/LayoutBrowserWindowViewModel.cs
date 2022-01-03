@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -29,13 +30,17 @@ namespace LayoutBrowser.Window
 
     public class LayoutBrowserWindowViewModel : ObservableObject
     {
+        private static int windowIndex;
+
         private readonly IBrowserTabFactory tabFactory;
         private readonly IBrowserTabViewModelFactory tabVmFactory;
         private readonly ILogger logger;
+        private readonly IWpfAppEntryPoint entryPoint;
         private readonly ObservableCollection<WindowTabItem> tabs = new ObservableCollection<WindowTabItem>();
         private readonly ObservableCollection<WindowTabItem> backgroundLoading = new ObservableCollection<WindowTabItem>();
 
         private readonly Guid id;
+        private int myIndex = Interlocked.Increment(ref windowIndex);
 
         private readonly ICommand changeIconCommand;
         private readonly ICommand quitCommand;
@@ -55,11 +60,12 @@ namespace LayoutBrowser.Window
         private bool overrideLayoutMethod;
         private bool overrideLayoutUsingToBack;
 
-        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger)
+        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger, IWpfAppEntryPoint entryPoint)
         {
             this.tabFactory = tabFactory;
             this.tabVmFactory = tabVmFactory;
             this.logger = logger;
+            this.entryPoint = entryPoint;
 
             id = model.id;
 
@@ -118,6 +124,11 @@ namespace LayoutBrowser.Window
         public double WidthNativeInit => widthNativeInit;
         public double HeightNativeInit => heightNativeInit;
 
+        public double LeftNative => leftNative;
+        public double TopNative => topNative;
+        public double WidthNative => widthNative;
+        public double HeightNative => heightNative;
+
         public string UrlList => tabs.Select(t => t.ViewModel.UrlVm.Url).CommaString();
 
         private void OnFirstNavComplete(BrowserTabViewModel vm)
@@ -128,6 +139,9 @@ namespace LayoutBrowser.Window
         }
 
         public Guid Id => id;
+        public int Index => myIndex;
+
+        public bool ShowDebugInfo => entryPoint.ShowConsole;
 
         public bool ShowTabBar
         {

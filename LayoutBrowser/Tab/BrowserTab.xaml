@@ -206,6 +206,24 @@
                                       ToolTipService.ShowDuration="999999999" ToolTip="If checked and layout behavior override enabled, window is always sent to back when window layout is restored for a `Window order locked` setting. If unchecked, the window is sent to the front." />
                         </MenuItem>
                         <MenuItem Header="Duplicate window" Click="DuplicateWindowClick" />
+                        <MenuItem StaysOpenOnClick="True" Header="Debug">
+                            <MenuItem.Style>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ParentWindow.ShowDebugInfo}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </MenuItem.Style>
+
+                            <MenuItem StaysOpenOnClick="True">
+                                <MenuItem.Header>
+                                    <TextBlock><Run>Window index:</Run> <Run Text="{Binding ParentWindow.Index, Mode=OneWay}"></Run></TextBlock>
+                                </MenuItem.Header>
+                            </MenuItem>
+                        </MenuItem>
 
                         <Separator />
                         <!-- Global settings -->
