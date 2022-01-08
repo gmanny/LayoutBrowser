@@ -10,6 +10,7 @@
              xmlns:tab="clr-namespace:LayoutBrowser.Tab"
              xmlns:window="clr-namespace:LayoutBrowser.Window"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding ViewModel, RelativeSource={RelativeSource Mode=Self}}">
@@ -76,6 +77,34 @@
                 <Button.ContextMenu>
                     <ContextMenu>
                         <!-- Per-tab settings -->
+                        <ContextMenu.Resources>
+                            <ItemContainerTemplate DataType="{x:Type tab:ElementBlockerEnabledItemViewModel}" >
+                                <MenuItem Header="Enabled" IsCheckable="True" IsChecked="{Binding Parent.Enabled}" StaysOpenOnClick="True" />
+                            </ItemContainerTemplate>
+
+                            <ItemContainerTemplate DataType="{x:Type tab:ElementBlockerSeparatorItem}">
+                                <Separator />
+                            </ItemContainerTemplate>
+
+                            <ItemContainerTemplate DataType="{x:Type tab:ElementBlockerRuleItemViewModel}">
+                                <MenuItem StaysOpenOnClick="True">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" />
+                                            <TextBox Text="{Binding Selector, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" MaxWidth="300" TextWrapping="Wrap" VerticalAlignment="Stretch" />
+                                            <Button Content="✕" ToolTip="Remove rule" MinWidth="20" VerticalAlignment="Stretch" Command="{Binding RemoveCommand}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                            </ItemContainerTemplate>
+
+                            <ItemContainerTemplate DataType="{x:Type tab:ElementBlockerAddNewButtonItem}">
+                                <MenuItem Header="Add new rule" StaysOpenOnClick="True" Command="{Binding AddNewCommand}" />
+                            </ItemContainerTemplate>
+
+                            <utils:SimpleItemContainerTemplateSelector x:Key="DefTemplateSelector"/>
+                        </ContextMenu.Resources>
+
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
                         <MenuItem IsCheckable="True" IsChecked="{Binding UrlVm.LockUrl, Mode=TwoWay}" Header="Lock URL" ToolTip="Prevent the URL from being changed by the website due to redirects." ToolTipService.ShowDuration="999999999" />
                         <MenuItem IsCheckable="True" IsChecked="{Binding ScrollRestore.LockScroll, Mode=TwoWay}" Header="Lock Scroll" ToolTip="Remember the scroll position at the time of this option toggle and always restore to that scroll position." ToolTipService.ShowDuration="999999999" />
@@ -161,6 +190,9 @@
                         </MenuItem>
                         <MenuItem IsCheckable="True" IsChecked="{Binding UrlVm.DontRefreshOnBrowserFail, Mode=TwoWay}" Header="Don't refresh on browser fail" ToolTip="Don't auto-refresh this tab if the browser process fails/crashes for some reason." ToolTipService.ShowDuration="999999999" />
                         <MenuItem Header="Duplicate tab" Click="DuplicateTabClick" />
+                        <MenuItem Header="Element blocker" ToolTipService.ShowDuration="999999999" ToolTip="Hides elements that match a CSS selector."
+                                  StaysOpenOnClick="True" IsChecked="{Binding ElementBlocker.Enabled}" ItemsSource="{Binding ElementBlocker.UiMenuItems}"
+                                  UsesItemContainerTemplate="True" ItemContainerTemplateSelector="{StaticResource DefTemplateSelector}" ItemTemplate="{x:Null}" />
 
                         <Separator />
                         <!-- Per-window settings -->

@@ -40,6 +40,8 @@ namespace LayoutBrowser
             Bind<IBrowserTabViewModelFactory>().ToFactory();
             Bind<UrlLockViewModel>().ToSelf();
             Bind<IUrlLockViewModelFactory>().ToFactory();
+            Bind<ElementBlockerViewModel>().ToSelf();
+            Bind<IElementBlockerViewModelFactory>().ToFactory();
 
             Bind<LayoutBrowserWindow>().ToSelf();
             Bind<ILayoutBrowserWindowFactory>().ToFactory();

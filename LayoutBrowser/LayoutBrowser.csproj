@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Tab\ElementBlockerUserScript.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.705.50" />
     <PackageReference Include="Ninject.Extensions.Factory" Version="3.3.2" />
@@ -46,6 +50,10 @@
 
   <ItemGroup>
     <Folder Include="Resources\Icons\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Tab\ElementBlockerUserScript.js" />
   </ItemGroup>
 
 </Project>

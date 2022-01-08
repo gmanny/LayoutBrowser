@@ -41,6 +41,11 @@ namespace LayoutBrowser.Tab
             }
         }
 
+        public void PostJsonMessage<TMessage>(TMessage message)
+        {
+            webView.CoreWebView2.PostWebMessageAsJson(ser.Serialize(message));
+        }
+
         private void OnMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         { 
             string json = e.WebMessageAsJson;

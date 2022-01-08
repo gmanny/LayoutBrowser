@@ -36,6 +36,7 @@ namespace LayoutBrowser.Tab
         private readonly ScrollRestoreViewModel scrollRestore;
         private readonly NegativeMarginViewModel negativeMargin;
         private readonly UrlLockViewModel urlVm;
+        private readonly ElementBlockerViewModel elementBlocker;
         
         private readonly CoreWebView2CreationProperties creationArgs;
 
@@ -53,7 +54,8 @@ namespace LayoutBrowser.Tab
 
         public BrowserTabViewModel(LayoutWindowTab model, LayoutBrowserWindowViewModel parentWindow, ProfileManager profileManager, IProfileListViewModelFactory profileListFactory,
             IAutoRefreshSettingsViewModelFactory autoRefreshFactory, IWebView2MessagingServiceFactory messengerFactory, IScrollRestoreViewModelFactory scrollFactory,
-            LayoutManagerViewModel layoutManagerVm, INegativeMarginViewModelFactory negativeMarginFactory, IUrlLockViewModelFactory urlFactory, ILogger logger)
+            LayoutManagerViewModel layoutManagerVm, INegativeMarginViewModelFactory negativeMarginFactory, IUrlLockViewModelFactory urlFactory, IElementBlockerViewModelFactory blockerFactory,
+            ILogger logger)
         {
             this.parentWindow = parentWindow;
             this.messengerFactory = messengerFactory;
@@ -77,6 +79,8 @@ namespace LayoutBrowser.Tab
             profileList = profileListFactory.ForOwnerTab(this);
 
             autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, urlVm.OnAutoRefresh);
+
+            elementBlocker = blockerFactory.ForModel(model.elementBlocking);
             
             storedZoomFactor = zoomFactor = model.zoomFactor;
             browserTitle = model.title;
@@ -101,6 +105,7 @@ namespace LayoutBrowser.Tab
         public ScrollRestoreViewModel ScrollRestore => scrollRestore;
         public NegativeMarginViewModel NegativeMargin => negativeMargin;
         public UrlLockViewModel UrlVm => urlVm;
+        public ElementBlockerViewModel ElementBlocker => elementBlocker;
 
         public LayoutManagerViewModel LayoutMgr => layoutManagerVm;
 
@@ -129,7 +134,8 @@ namespace LayoutBrowser.Tab
             scrollY = scrollRestore.LastScroll.Y,
             lockScroll = scrollRestore.LockScroll,
             negativeMargin = negativeMargin.ToModel(),
-            dontRefreshOnBrowserFail = urlVm.DontRefreshOnBrowserFail
+            dontRefreshOnBrowserFail = urlVm.DontRefreshOnBrowserFail,
+            elementBlocking = elementBlocker.ToModel()
         };
 
         public bool Hidden
@@ -207,6 +213,7 @@ namespace LayoutBrowser.Tab
             await urlVm.PlugIntoWebView(wv, messenger);
             await scrollRestore.PlugIntoWebView(wv, messenger);
             await negativeMargin.PlugIntoWebView(wv, messenger);
+            await elementBlocker.PlugIntoWebView(wv, messenger);
 
             BrowserTitle = wv.CoreWebView2.DocumentTitle;
             wv.CoreWebView2.DocumentTitleChanged += OnTitleChanged;

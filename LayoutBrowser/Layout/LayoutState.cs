@@ -100,6 +100,8 @@ namespace LayoutBrowser.Layout
 
         public bool dontRefreshOnBrowserFail;
 
+        public ElementBlockingSettings elementBlocking;
+
         public LayoutWindowTab Copy() => new LayoutWindowTab
         {
             url = url,
@@ -116,7 +118,8 @@ namespace LayoutBrowser.Layout
             scrollDelay = scrollDelay,
             lockScroll = lockScroll,
             negativeMargin = negativeMargin.Copy(),
-            dontRefreshOnBrowserFail = dontRefreshOnBrowserFail
+            dontRefreshOnBrowserFail = dontRefreshOnBrowserFail,
+            elementBlocking = elementBlocking.Copy()
         };
     }
 
@@ -133,6 +136,30 @@ namespace LayoutBrowser.Layout
             top = top,
             right = right,
             bottom = bottom
+        };
+    }
+
+    public class ElementBlockingSettings
+    {
+        public bool enabled;
+        public List<ElementBlockingRule> rules;
+
+        public ElementBlockingSettings Copy() => new ElementBlockingSettings
+        {
+            enabled = enabled,
+            rules = rules.Select(r => r.Copy()).ToList()
+        };
+    }
+
+    public class ElementBlockingRule
+    {
+        public bool enabled;
+        public string selector;
+
+        public ElementBlockingRule Copy() => new ElementBlockingRule
+        {
+            enabled = enabled,
+            selector = selector
         };
     }
 
