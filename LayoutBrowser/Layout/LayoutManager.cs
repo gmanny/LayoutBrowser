@@ -37,6 +37,7 @@ namespace LayoutBrowser.Layout
         private bool minimizedAll;
         private bool layoutRestoreUsingToBack;
         private bool storeClosedHistory;
+        private bool darkMode;
 
         private bool stopping;
 
@@ -78,6 +79,12 @@ namespace LayoutBrowser.Layout
         {
             get => storeClosedHistory;
             set => storeClosedHistory = value;
+        }
+
+        public bool DarkMode
+        {
+            get => darkMode;
+            set => darkMode = value;
         }
 
         /// <summary>
@@ -160,7 +167,8 @@ namespace LayoutBrowser.Layout
                 locked = layoutLocked,
                 minimizedAll = minimizedAll,
                 restoreUsingToBack = layoutRestoreUsingToBack,
-                storeClosedHistory = storeClosedHistory
+                storeClosedHistory = storeClosedHistory,
+                useLightMode = !darkMode
             };
 
             Settings.Default.Layout = ser.Serialize(state);
@@ -189,6 +197,10 @@ namespace LayoutBrowser.Layout
 
             LayoutState state = FromSettings();
 
+            LayoutRestoreUsingToBack = state.restoreUsingToBack;
+            storeClosedHistory = state.storeClosedHistory;
+            darkMode = !state.useLightMode;
+
             List<LayoutWindow> copy = state.windows.ToList();
             copy.Reverse();
 
@@ -204,8 +216,6 @@ namespace LayoutBrowser.Layout
 
             layoutLocked = state.locked;
             minimizedAll = state.minimizedAll;
-            LayoutRestoreUsingToBack = state.restoreUsingToBack;
-            storeClosedHistory = state.storeClosedHistory;
 
             Task.WhenAll(layoutRestoreComplete).OnComplete(_ =>
             {

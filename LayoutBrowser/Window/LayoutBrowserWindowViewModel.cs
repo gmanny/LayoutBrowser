@@ -36,6 +36,7 @@ namespace LayoutBrowser.Window
         private readonly IBrowserTabViewModelFactory tabVmFactory;
         private readonly ILogger logger;
         private readonly IWpfAppEntryPoint entryPoint;
+        private readonly LayoutManagerViewModel layoutMgr;
         private readonly ObservableCollection<WindowTabItem> tabs = new ObservableCollection<WindowTabItem>();
         private readonly ObservableCollection<WindowTabItem> backgroundLoading = new ObservableCollection<WindowTabItem>();
 
@@ -60,12 +61,14 @@ namespace LayoutBrowser.Window
         private bool overrideLayoutMethod;
         private bool overrideLayoutUsingToBack;
 
-        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger, IWpfAppEntryPoint entryPoint)
+        public LayoutBrowserWindowViewModel(LayoutWindow model, IBrowserTabFactory tabFactory, IBrowserTabViewModelFactory tabVmFactory, ILogger logger, IWpfAppEntryPoint entryPoint,
+            LayoutManagerViewModel layoutMgr)
         {
             this.tabFactory = tabFactory;
             this.tabVmFactory = tabVmFactory;
             this.logger = logger;
             this.entryPoint = entryPoint;
+            this.layoutMgr = layoutMgr;
 
             id = model.id;
 
@@ -128,6 +131,8 @@ namespace LayoutBrowser.Window
         public double TopNative => topNative;
         public double WidthNative => widthNative;
         public double HeightNative => heightNative;
+
+        public LayoutManagerViewModel LayoutMgr => layoutMgr;
 
         public string UrlList => tabs.Select(t => t.ViewModel.UrlVm.Url).CommaString();
 

@@ -260,6 +260,7 @@
                         <Separator />
                         <!-- Global settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
+                        <MenuItem Header="Dark mode" IsCheckable="True" IsChecked="{Binding LayoutMgr.DarkMode, Mode=TwoWay}" />
                         <MenuItem Header="Window order locked" IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
                         <MenuItem Header="Maintain order with ToBack" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
                         <MenuItem Header="Store closed tab history" ToolTipService.ShowDuration="999999999" ToolTip="Save closed windows and tabs to disk between restarts. This mimics chromium's behavior, but stores browsing history in plain text on disk." IsCheckable="True" IsChecked="{Binding LayoutMgr.StoreClosedHistory, Mode=TwoWay}" />

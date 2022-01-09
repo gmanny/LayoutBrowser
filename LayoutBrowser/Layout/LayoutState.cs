@@ -14,6 +14,7 @@ namespace LayoutBrowser.Layout
         public bool minimizedAll;
         public bool restoreUsingToBack;
         public bool storeClosedHistory;
+        public bool useLightMode;
     }
 
     public class LayoutWindow

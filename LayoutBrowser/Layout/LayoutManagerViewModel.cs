@@ -43,5 +43,16 @@ namespace LayoutBrowser.Layout
                 OnPropertyChanged();
             }
         }
+
+        public bool DarkMode
+        {
+            get => layoutManager.DarkMode;
+            set
+            {
+                layoutManager.DarkMode = value;
+
+                OnPropertyChanged();
+            }
+        }
     }
 }
