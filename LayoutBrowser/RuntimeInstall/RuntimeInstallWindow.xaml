@@ -77,8 +77,8 @@
                         </Style>
                     </WrapPanel.Style>
 
-                    <Button Content="Install Runtime ..." IsDefault="True" Click="InstallRuntimeClick" Width="100" Height="28" Margin="0,0,8,5" />
-                    <Button Content="Quit Browser" Click="QuitButtonClick" Width="100" Height="28" Margin="0,0,0,5" />
+                    <Button Content="Install Runtime..." IsDefault="True" Click="InstallRuntimeClick" Width="100" Height="28" Margin="0,0,8,5" />
+                    <Button Content="Quit Browser" IsCancel="True" Click="QuitButtonClick" Width="100" Height="28" Margin="0,0,0,5" />
                 </WrapPanel>
                 <TextBlock Margin="0,0,0,5">
                     Installing...
@@ -130,8 +130,8 @@
                         </Style>
                     </WrapPanel.Style>
 
-                    <Button Content="Try Again ..." IsDefault="True" Click="InstallRuntimeClick" Width="100" Height="28" Margin="0,0,8,5" />
-                    <Button Content="Quit Browser" Click="QuitButtonClick" Width="100" Height="28" Margin="0,0,0,5" />
+                    <Button Content="Try Again..." IsDefault="True" Click="InstallRuntimeClick" Width="100" Height="28" Margin="0,0,8,5" />
+                    <Button Content="Quit Browser" IsCancel="True" Click="QuitButtonClick" Width="100" Height="28" Margin="0,0,0,5" />
                 </WrapPanel>
             </StackPanel>
 
