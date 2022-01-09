@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using LayoutBrowser.Layout;
+using LayoutBrowser.RuntimeInstall;
 using LayoutBrowser.Window;
 using Ninject;
 using Ninject.Modules;
@@ -27,11 +29,30 @@ namespace LayoutBrowser
 
         private static void LayoutRestoreStartup(IKernel kernel, App app, WpfAppService<App, LayoutBrowserWindow> service)
         {
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            // check if WebView2 runtime is available
+            if (!RuntimeInstallWindowViewModel.IsRuntimeAvailable())
+            {
+                if (!InstallRuntime(kernel))
+                {
+                    // runtime install unsuccessful, exit the app
+                    Environment.Exit(-2);
+                }
+            }
+
             LayoutManager manager = kernel.Get<LayoutManager>();
 
             manager.RestoreLayout();
+        }
 
-            // todo: set main window in service after restore
+        private static bool InstallRuntime(IKernel kernel)
+        {
+            RuntimeInstallWindowViewModel vm = kernel.Get<RuntimeInstallWindowViewModel>();
+            IRuntimeInstallWindowFactory wndFactory = kernel.Get<IRuntimeInstallWindowFactory>();
+            RuntimeInstallWindow wnd = wndFactory.ForViewModel(vm);
+
+            return wnd.ShowDialog() ?? false;
         }
     }
 }

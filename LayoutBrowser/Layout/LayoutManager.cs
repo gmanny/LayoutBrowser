@@ -15,6 +15,7 @@ using Monitor.ServiceCommon.Util;
 using MonitorCommon;
 using MonitorCommon.Tasks;
 using Newtonsoft.Json;
+using WpfAppCommon;
 
 namespace LayoutBrowser.Layout
 {
@@ -23,6 +24,7 @@ namespace LayoutBrowser.Layout
         private readonly ILayoutBrowserWindowViewModelFactory viewModelFactory;
         private readonly ILayoutBrowserWindowFactory windowFactory;
         private readonly ILogger logger;
+        private readonly App app;
 
         private readonly JsonSerializer ser;
 
@@ -40,11 +42,15 @@ namespace LayoutBrowser.Layout
 
         private bool inMinimizeAll;
 
-        public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, JsonSerializerSvc serSvc, ProcessLifetimeSvc lifetimeSvc, ILogger logger)
+        public LayoutManager(ILayoutBrowserWindowViewModelFactory viewModelFactory, ILayoutBrowserWindowFactory windowFactory, 
+            JsonSerializerSvc serSvc, ProcessLifetimeSvc lifetimeSvc, ILogger logger, App app)
         {
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             this.viewModelFactory = viewModelFactory;
             this.windowFactory = windowFactory;
             this.logger = logger;
+            this.app = app;
 
             ser = serSvc.Serializer;
 
@@ -452,6 +458,11 @@ namespace LayoutBrowser.Layout
             if (!windowHash.TryRemove(item.ViewModel.Id, out _))
             {
                 logger.LogDebug($"Couldn't find window with id {item.ViewModel.Id} in window hash");
+            }
+
+            if (windows.IsEmpty())
+            {
+                app.Shutdown();
             }
         }
 

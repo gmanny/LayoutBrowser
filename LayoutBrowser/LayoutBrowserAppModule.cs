@@ -1,4 +1,5 @@
 ﻿using LayoutBrowser.Layout;
+using LayoutBrowser.RuntimeInstall;
 using LayoutBrowser.Tab;
 using LayoutBrowser.Window;
 using Monitor.ServiceCommon.Services.DiEager;
@@ -47,6 +48,10 @@ namespace LayoutBrowser
             Bind<ILayoutBrowserWindowFactory>().ToFactory();
             Bind<LayoutBrowserWindowViewModel>().ToSelf();
             Bind<ILayoutBrowserWindowViewModelFactory>().ToFactory();
+
+            Bind<RuntimeInstallWindowViewModel>().ToSelf();
+            Bind<RuntimeInstallWindow>().ToSelf();
+            Bind<IRuntimeInstallWindowFactory>().ToFactory();
         }
     }
 }
