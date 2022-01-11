@@ -622,6 +622,37 @@
                             </Grid>
                         </MenuItem.Header>
                     </MenuItem>
+                    <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Element blocker" PreviewMouseDown="OnElementBlockerFeatureButtonPressed" Visibility="{Binding ElementBlocker.HasRules, Converter={StaticResource BoolToVis}}">
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementBlocker.Enabled}" Value="True">
+                                        <Setter Property="BorderBrush" Value="ForestGreen" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </MenuItem.Style>
+                        <MenuItem.Header>
+                            <Grid>
+                                <TextBlock Text="−El" FontWeight="Bold" Visibility="Hidden" />
+
+                                <TextBlock Text="−El" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementBlocker.Enabled}" Value="True">
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </MenuItem.Header>
+                    </MenuItem>
                 </Menu>
             </Grid>
         </DockPanel>

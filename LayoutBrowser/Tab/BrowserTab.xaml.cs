@@ -113,5 +113,10 @@ namespace LayoutBrowser.Tab
 
             layoutManager.AddWindow(model);
         }
+
+        private void OnElementBlockerFeatureButtonPressed(object sender, MouseButtonEventArgs e)
+        {
+            viewModel.ElementBlocker.Enabled = !viewModel.ElementBlocker.Enabled;
+        }
     }
 }

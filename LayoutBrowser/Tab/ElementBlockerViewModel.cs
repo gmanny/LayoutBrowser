@@ -31,6 +31,7 @@ namespace LayoutBrowser.Tab
         private readonly CollectionManager<IElementBlockerMenuItem, IElementBlockerMenuItem> uiMenuItems = new CollectionManager<IElementBlockerMenuItem, IElementBlockerMenuItem>(i => i);
 
         private bool enabled;
+        private bool hasRules;
 
         private WebView2 webView;
         private WebView2MessagingService msgr;
@@ -67,6 +68,14 @@ namespace LayoutBrowser.Tab
                 OnEnabledChanged(value);
             }
         }
+
+        public bool HasRules
+        {
+            get => hasRules;
+            set => SetProperty(ref hasRules, value);
+        }
+
+        private void UpdateHasRules() => HasRules = rules.Any(r => r.Enabled);
 
         public ObservableCollection<ElementBlockerRuleItemViewModel> Rules => rules;
 
@@ -111,6 +120,8 @@ namespace LayoutBrowser.Tab
 
             rules.Add(ruleVm);
 
+            UpdateHasRules();
+
             if (webView != null)
             {
                 OnRuleAdded(ruleVm);
@@ -140,6 +151,8 @@ namespace LayoutBrowser.Tab
             {
                 rules.RemoveAt(idx);
             }
+
+            UpdateHasRules();
 
             OnRuleRemoved(ruleVm);
         }
@@ -175,6 +188,8 @@ namespace LayoutBrowser.Tab
 
         private void OnRuleEnabledChanged(bool enbl, ElementBlockerRuleItemViewModel model)
         {
+            UpdateHasRules();
+
             if (!enabled)
             {
                 return;
