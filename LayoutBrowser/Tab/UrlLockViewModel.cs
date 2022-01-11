@@ -35,6 +35,8 @@ namespace LayoutBrowser.Tab
         private int lockUrlRetries;
         private bool lockUrlSettled = true;
         private bool dontRefreshOnBrowserFail;
+        private DateTime? lastFail;
+        private bool isFailNavigation;
         
         private WebView2 webView;
 
@@ -61,8 +63,23 @@ namespace LayoutBrowser.Tab
             wv.CoreWebView2.ProcessFailed += OnProcessFailed;
         }
 
+        public DateTime? LastFail
+        {
+            get => lastFail;
+            set
+            {
+                SetProperty(ref lastFail, value);
+
+                OnPropertyChanged(nameof(HasLastFailDate));
+            }
+        }
+
+        public bool HasLastFailDate => lastFail.HasValue;
+
         private void OnProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs e)
         {
+            LastFail = DateTime.Now;
+
             if (dontRefreshOnBrowserFail)
             {
                 return;
@@ -72,6 +89,7 @@ namespace LayoutBrowser.Tab
             {
                 await Task.Delay(TimeSpan.FromSeconds(3));
 
+                isFailNavigation = true;
                 webView.Reload();
             }, DispatcherPriority.Background);
         }
@@ -87,6 +105,15 @@ namespace LayoutBrowser.Tab
 
             webView.Dispatcher.BeginInvoke(async () =>
             {
+                if (!isFailNavigation)
+                {
+                    LastFail = null;
+                }
+                else
+                {
+                    isFailNavigation = false;
+                }
+
                 await Task.Delay(TimeSpan.FromSeconds(0.25));
 
                 if (lockUrl)
