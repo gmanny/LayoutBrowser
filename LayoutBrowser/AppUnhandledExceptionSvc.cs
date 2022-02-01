@@ -2,31 +2,32 @@
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 
-namespace LayoutBrowser
+namespace LayoutBrowser;
+
+public class AppUnhandledExceptionSvc
 {
-    public class AppUnhandledExceptionSvc
+    private readonly ILogger logger;
+
+    public AppUnhandledExceptionSvc(App app, ILogger logger)
     {
-        private readonly ILogger logger;
+        this.logger = logger;
 
-        public AppUnhandledExceptionSvc(App app, ILogger logger)
+        app.DispatcherUnhandledException += (_, e) => OnDispatcherUnhandledException(e);
+    }
+
+    private void OnDispatcherUnhandledException(DispatcherUnhandledExceptionEventArgs e)
+    {
+        if (e.Exception is not InvalidOperationException io)
         {
-            this.logger = logger;
-
-            app.DispatcherUnhandledException += (_, e) => OnDispatcherUnhandledException(e);
+            return;
         }
 
-        private void OnDispatcherUnhandledException(DispatcherUnhandledExceptionEventArgs e)
+        if (io.Message.Contains("RoutedEvent"))
         {
-            if (e.Exception is InvalidOperationException io)
-            {
-                if (io.Message.Contains("RoutedEvent"))
-                {
-                    // webView2 seems (understandably) quirky when changing its parent window
-                    e.Handled = true;
+            // webView2 seems (understandably) quirky when changing its parent window
+            e.Handled = true;
 
-                    logger.LogDebug($"Ignoring exception `{e.Exception.Message}`");
-                }
-            }
+            logger.LogDebug($"Ignoring exception `{e.Exception.Message}`");
         }
     }
 }

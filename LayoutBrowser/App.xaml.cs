@@ -1,9 +1,5 @@
-﻿namespace LayoutBrowser
+﻿namespace LayoutBrowser;
+
+public partial class App
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App
-    {
-    }
 }

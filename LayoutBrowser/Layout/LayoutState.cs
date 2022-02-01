@@ -8,7 +8,7 @@ namespace LayoutBrowser.Layout
 {
     public class LayoutState
     {
-        public List<LayoutWindow> windows = new List<LayoutWindow>();
+        public List<LayoutWindow> windows = new();
 
         public bool locked;
         public bool minimizedAll;
@@ -19,7 +19,7 @@ namespace LayoutBrowser.Layout
 
     public class LayoutWindow
     {
-        public List<LayoutWindowTab> tabs = new List<LayoutWindowTab>();
+        public List<LayoutWindowTab> tabs = new();
         public int activeTabIndex;
 
         [DefaultValue(WindowState.Normal)]
@@ -52,7 +52,7 @@ namespace LayoutBrowser.Layout
 
         public bool? overrideToBack;
 
-        public LayoutWindow Copy() => new LayoutWindow
+        public LayoutWindow Copy() => new()
         {
             tabs = tabs.Select(t => t.Copy()).ToList(),
             activeTabIndex = activeTabIndex,
@@ -103,7 +103,7 @@ namespace LayoutBrowser.Layout
 
         public ElementBlockingSettings elementBlocking;
 
-        public LayoutWindowTab Copy() => new LayoutWindowTab
+        public LayoutWindowTab Copy() => new()
         {
             url = url,
             lockUrl = lockUrl,
@@ -130,7 +130,7 @@ namespace LayoutBrowser.Layout
         public double left, top, right, bottom;
         public bool leftRightNativeMode;
 
-        public TabNegativeMargin Copy() => new TabNegativeMargin
+        public TabNegativeMargin Copy() => new()
         {
             enabled = enabled,
             left = left,
@@ -145,7 +145,7 @@ namespace LayoutBrowser.Layout
         public bool enabled;
         public List<ElementBlockingRule> rules;
 
-        public ElementBlockingSettings Copy() => new ElementBlockingSettings
+        public ElementBlockingSettings Copy() => new()
         {
             enabled = enabled,
             rules = rules.Select(r => r.Copy()).ToList()
@@ -157,7 +157,7 @@ namespace LayoutBrowser.Layout
         public bool enabled;
         public string selector;
 
-        public ElementBlockingRule Copy() => new ElementBlockingRule
+        public ElementBlockingRule Copy() => new()
         {
             enabled = enabled,
             selector = selector
@@ -167,7 +167,7 @@ namespace LayoutBrowser.Layout
     public class ClosedItemHistory
     {
         // oldest -> newest
-        public List<IClosedItem> closedItems = new List<IClosedItem>();
+        public List<IClosedItem> closedItems = new();
     }
 
     public interface IClosedItem { }

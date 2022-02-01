@@ -11,105 +11,80 @@ using WpfAppCommon;
 using WpfAppCommon.CollectionSegmenting;
 using WpfAppCommon.Prompt;
 
-namespace LayoutBrowser.Tab
+namespace LayoutBrowser.Tab;
+
+public interface IProfileListViewModelFactory
 {
-    public interface IProfileListViewModelFactory
+    public ProfileListViewModel ForOwnerTab(BrowserTabViewModel ownerTab);
+}
+
+public class ProfileListViewModel : ObservableObject
+{
+    private readonly BrowserTabViewModel ownerTab;
+    private readonly ProfileManager profileManager;
+
+    private readonly ConcurrentDictionary<ProfileItem, ProfileListItem> profileItemHash = new();
+    private readonly CollectionManager<ProfileListItem, ProfileListItem> combiningCollectionManager;
+
+    public ProfileListViewModel(BrowserTabViewModel ownerTab, ProfileManager profileManager)
     {
-        public ProfileListViewModel ForOwnerTab(BrowserTabViewModel ownerTab);
-    }
+        this.ownerTab = ownerTab;
+        this.profileManager = profileManager;
 
-    public class ProfileListViewModel : ObservableObject
-    {
-        private readonly BrowserTabViewModel ownerTab;
-        private readonly ProfileManager profileManager;
-
-        private readonly CollectionManager<ProfileListItem, ProfileItem> normalProfileMutator;
-        private readonly ConcurrentDictionary<ProfileItem, ProfileListItem> profileItemHash = new ConcurrentDictionary<ProfileItem, ProfileListItem>();
-        private readonly CollectionManager<ProfileListItem, ProfileListItem> combiningCollectionManager;
-
-        public ProfileListViewModel(BrowserTabViewModel ownerTab, ProfileManager profileManager)
-        {
-            this.ownerTab = ownerTab;
-            this.profileManager = profileManager;
-
-            normalProfileMutator = new CollectionManager<ProfileListItem, ProfileItem>(
-                p =>
-                {
-                    if (!profileItemHash.TryGetValue(p, out ProfileListItem pl))
-                    {
-                        pl = new ProfileListItem(p, ownerTab.Profile == p, OnProfileSelected);
-                    }
-
-                    return pl;
-                }
-            );
-            normalProfileMutator.AddItemBlock(new SimpleItemBlock<ProfileItem>(profileManager.Profiles));
-
-            combiningCollectionManager = new CollectionManager<ProfileListItem, ProfileListItem>(p => p);
-            combiningCollectionManager.AddItemBlock(new SimpleItemBlock<ProfileListItem>(normalProfileMutator.Collection));
-            combiningCollectionManager.AddItem(new ProfileListSeparator(), DefaultCollectionBlock.Back);
-            combiningCollectionManager.AddItem(new ProfileListCreateNew(OnCreateNewProfile), DefaultCollectionBlock.Back);
-        }
-
-        public ObservableCollection<ProfileListItem> ListItems => combiningCollectionManager.Collection;
-
-        private void OnCreateNewProfile()
-        {
-            string profileCaption = InputBox.Show("Please enter new profile name:", "Create profile");
-            if (profileCaption.IsNullOrEmpty())
+        CollectionManager<ProfileListItem, ProfileItem> normalProfileMutator = new(
+            p =>
             {
-                return;
+                if (!profileItemHash.TryGetValue(p, out ProfileListItem pl))
+                {
+                    pl = new ProfileListItem(p, ownerTab.Profile == p, OnProfileSelected);
+                    profileItemHash[p] = pl;
+                }
+
+                return pl;
             }
+        );
+        normalProfileMutator.AddItemBlock(new SimpleItemBlock<ProfileItem>(profileManager.Profiles));
 
-            string profileName = profileCaption.ToLowerInvariant().Replace(' ', '_');
-            ProfileItem profile = profileManager.AddProfile(profileName, profileCaption);
-
-            OnProfileSelected(profile);
-        }
-
-        private void OnProfileSelected(ProfileListItem pi) => OnProfileSelected(pi.Model);
-
-        private void OnProfileSelected(ProfileItem pi) => ownerTab.OnNewProfileSelected(pi);
+        combiningCollectionManager = new CollectionManager<ProfileListItem, ProfileListItem>(p => p);
+        combiningCollectionManager.AddItemBlock(new SimpleItemBlock<ProfileListItem>(normalProfileMutator.Collection));
+        combiningCollectionManager.AddItem(new ProfileListSeparator(), DefaultCollectionBlock.Back);
+        combiningCollectionManager.AddItem(new ProfileListCreateNew(OnCreateNewProfile), DefaultCollectionBlock.Back);
     }
 
-    public class DefaultItemContainerTemplateSelector : ItemContainerTemplateSelector
+    public ObservableCollection<ProfileListItem> ListItems => combiningCollectionManager.Collection;
+
+    private void OnCreateNewProfile()
     {
-        public override DataTemplate SelectTemplate(object item, ItemsControl parentItemsControl)
+        string profileCaption = InputBox.Show("Please enter new profile name:", "Create profile");
+        if (profileCaption.IsNullOrEmpty())
         {
-            return parentItemsControl.FindResource(item.GetType()) as DataTemplate;
-        }
-    }
-
-    public class ProfileListSeparator : ProfileListItem
-    {
-        public ProfileListSeparator() : base(null, false, null)
-        { }
-    }
-
-    public class ProfileListCreateNew : ProfileListItem
-    {
-        public ProfileListCreateNew(Action selected) : base(null, false, _ => selected?.Invoke())
-        { }
-    }
-
-    public class ProfileListItem : ObservableObject
-    {
-        private readonly ProfileItem model;
-        private readonly bool isChecked;
-        private readonly ICommand selectedCommand;
-
-        public ProfileListItem(ProfileItem model, bool isChecked, Action<ProfileListItem> selected)
-        {
-            this.model = model;
-            this.isChecked = isChecked;
-
-            selectedCommand = new WindowCommand(() => selected?.Invoke(this));
+            return;
         }
 
-        public ProfileItem Model => model;
-        
-        public bool IsChecked => isChecked;
+        string profileName = profileCaption.ToLowerInvariant().Replace(' ', '_');
+        ProfileItem profile = profileManager.AddProfile(profileName, profileCaption);
 
-        public ICommand SelectedCommand => selectedCommand;
+        OnProfileSelected(profile);
     }
+
+    private void OnProfileSelected(ProfileListItem pi) => OnProfileSelected(pi.Model);
+
+    private void OnProfileSelected(ProfileItem pi) => ownerTab.OnNewProfileSelected(pi);
+}
+
+public class DefaultItemContainerTemplateSelector : ItemContainerTemplateSelector
+{
+    public override DataTemplate SelectTemplate(object item, ItemsControl parentItemsControl)
+    {
+        return parentItemsControl.FindResource(item.GetType()) as DataTemplate;
+    }
+}
+
+public record ProfileListSeparator() : ProfileListItem(null, false, null);
+
+public record ProfileListCreateNew(Action SimpleSelected) : ProfileListItem(null, false, _ => SimpleSelected?.Invoke());
+
+public record ProfileListItem(ProfileItem Model, bool IsChecked, Action<ProfileListItem> Selected)
+{
+    public ICommand SelectedCommand => new WindowCommand(() => Selected?.Invoke(this));
 }

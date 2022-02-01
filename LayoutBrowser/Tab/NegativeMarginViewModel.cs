@@ -6,156 +6,157 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using MvvmHelpers;
 
-namespace LayoutBrowser.Tab
+namespace LayoutBrowser.Tab;
+
+public interface INegativeMarginViewModelFactory
 {
-    public interface INegativeMarginViewModelFactory
+    public NegativeMarginViewModel ForModel(TabNegativeMargin model);
+}
+
+// document.body.style.margin = "-100px -100px -100px -100px"
+public class NegativeMarginViewModel : ObservableObject
+{
+    private double marginLeft, marginTop, marginRight, marginBottom;
+    private bool enabled, leftRightNativeMode;
+    private bool hasNonZeroValues;
+
+    private WebView2 webView;
+
+    public NegativeMarginViewModel(TabNegativeMargin model)
     {
-        public NegativeMarginViewModel ForModel(TabNegativeMargin model);
+        enabled = model.enabled;
+        marginLeft = model.left;
+        marginTop = model.top;
+        marginRight = model.right;
+        marginBottom = model.bottom;
+        leftRightNativeMode = model.leftRightNativeMode;
+
+        hasNonZeroValues = IsNonZero();
     }
 
-	// document.body.style.margin = "-100px -100px -100px -100px"
-    public class NegativeMarginViewModel : ObservableObject
+    private bool IsNonZero() => Math.Abs(marginLeft) > 1e-5 || Math.Abs(marginTop) > 1e-5 ||
+                                Math.Abs(marginRight) > 1e-5 || Math.Abs(marginBottom) > 1e-5; 
+
+    public TabNegativeMargin ToModel() => new()
     {
-        private double marginLeft, marginTop, marginRight, marginBottom;
-        private bool enabled, leftRightNativeMode;
-        private bool hasNonZeroValues;
+        enabled = enabled,
+        left = marginLeft,
+        top = marginTop,
+        right = marginRight,
+        bottom = marginBottom,
+        leftRightNativeMode = leftRightNativeMode
+    };
 
-        private WebView2 webView;
+    public bool HasNonZeroValues => hasNonZeroValues;
 
-        public NegativeMarginViewModel(TabNegativeMargin model)
+    public bool Enabled
+    {
+        get => enabled;
+        set
         {
-            enabled = model.enabled;
-            marginLeft = model.left;
-            marginTop = model.top;
-            marginRight = model.right;
-            marginBottom = model.bottom;
-            leftRightNativeMode = model.leftRightNativeMode;
+            SetProperty(ref enabled, value);
 
-            hasNonZeroValues = IsNonZero();
+            UpdateMargin();
         }
+    }
 
-        private bool IsNonZero() => Math.Abs(marginLeft) > 1e-5 || Math.Abs(marginTop) > 1e-5 ||
-                                    Math.Abs(marginRight) > 1e-5 || Math.Abs(marginBottom) > 1e-5; 
-
-        public TabNegativeMargin ToModel() => new TabNegativeMargin
+    public double MarginLeft
+    {
+        get => marginLeft;
+        set
         {
-            enabled = enabled,
-            left = marginLeft,
-            top = marginTop,
-            right = marginRight,
-            bottom = marginBottom,
-            leftRightNativeMode = leftRightNativeMode
-        };
+            SetProperty(ref marginLeft, value);
 
-        public bool HasNonZeroValues => hasNonZeroValues;
-
-        public bool Enabled
-        {
-            get => enabled;
-            set
-            {
-                SetProperty(ref enabled, value);
-
-                UpdateMargin();
-            }
+            UpdateMargin();
         }
+    }
 
-        public double MarginLeft
+    public double MarginTop
+    {
+        get => marginTop;
+        set
         {
-            get => marginLeft;
-            set
-            {
-                SetProperty(ref marginLeft, value);
+            SetProperty(ref marginTop, value);
 
-                UpdateMargin();
-            }
+            UpdateMargin();
         }
+    }
 
-        public double MarginTop
+    public double MarginRight
+    {
+        get => marginRight;
+        set
         {
-            get => marginTop;
-            set
-            {
-                SetProperty(ref marginTop, value);
+            SetProperty(ref marginRight, value);
 
-                UpdateMargin();
-            }
+            UpdateMargin();
         }
+    }
 
-        public double MarginRight
+    public double MarginBottom
+    {
+        get => marginBottom;
+        set
         {
-            get => marginRight;
-            set
-            {
-                SetProperty(ref marginRight, value);
+            SetProperty(ref marginBottom, value);
 
-                UpdateMargin();
-            }
+            UpdateMargin();
         }
+    }
 
-        public double MarginBottom
+    public bool LeftRightNativeMode
+    {
+        get => leftRightNativeMode;
+        set
         {
-            get => marginBottom;
-            set
-            {
-                SetProperty(ref marginBottom, value);
+            SetProperty(ref leftRightNativeMode, value);
 
-                UpdateMargin();
-            }
+            UpdateMargin();
         }
+    }
 
-        public bool LeftRightNativeMode
-        {
-            get => leftRightNativeMode;
-            set
-            {
-                SetProperty(ref leftRightNativeMode, value);
+    public Thickness NativeMargin => enabled
+        ? leftRightNativeMode
+            ? new Thickness(-marginLeft, 0, -marginRight, -marginBottom)
+            : new Thickness(0, 0, 0, -marginBottom)
+        : new Thickness(0, 0, 0, 0);
 
-                UpdateMargin();
-            }
-        }
+    private void UpdateMargin()
+    {
+        hasNonZeroValues = IsNonZero();
+        OnPropertyChanged(nameof(HasNonZeroValues));
 
-        public Thickness NativeMargin => enabled
-                ? leftRightNativeMode
-                    ? new Thickness(-marginLeft, 0, -marginRight, -marginBottom)
-                    : new Thickness(0, 0, 0, -marginBottom)
-                : new Thickness(0, 0, 0, 0);
+        OnPropertyChanged(nameof(NativeMargin));
 
-        private void UpdateMargin()
-        {
-            hasNonZeroValues = IsNonZero();
-            OnPropertyChanged(nameof(HasNonZeroValues));
+        SetNegativeMargin();
+    }
 
-            OnPropertyChanged(nameof(NativeMargin));
-
-            SetNegativeMargin();
-        }
-
-        public async Task PlugIntoWebView(WebView2 wv, WebView2MessagingService messenger)
-        {
-            webView = wv;
+    public Task PlugIntoWebView(WebView2 wv, WebView2MessagingService messenger)
+    {
+        webView = wv;
             
-            wv.NavigationCompleted += OnNavigationCompleted;
-        }
+        wv.NavigationCompleted += OnNavigationCompleted;
 
-        private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        return Task.CompletedTask;
+    }
+
+    private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        SetNegativeMargin();
+    }
+
+    private async void SetNegativeMargin()
+    {
+        if (webView == null)
         {
-            SetNegativeMargin();
+            return;
         }
 
-        private async void SetNegativeMargin()
-        {
-            if (webView == null)
-            {
-                return;
-            }
+        string script = enabled
+            ? $"document.body.style.margin = \"{-marginTop}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {(leftRightNativeMode ? 0 : -marginLeft)}px\""
+            : "document.body.style.margin = \"0px 0px 0px 0px\"";
 
-            string script = enabled
-                ? $"document.body.style.margin = \"{-marginTop}px {(leftRightNativeMode ? 0 : -marginRight)}px 0px {(leftRightNativeMode ? 0 : -marginLeft)}px\""
-                : "document.body.style.margin = \"0px 0px 0px 0px\"";
-
-            // bottom margin doesn't work and is implemented differently
-            await webView.ExecuteScriptAsync(script);
-        }
+        // bottom margin doesn't work and is implemented differently
+        await webView.ExecuteScriptAsync(script);
     }
 }

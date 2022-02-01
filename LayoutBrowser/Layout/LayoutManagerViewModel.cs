@@ -1,58 +1,57 @@
 ﻿using MvvmHelpers;
 
-namespace LayoutBrowser.Layout
+namespace LayoutBrowser.Layout;
+
+public class LayoutManagerViewModel : ObservableObject
 {
-    public class LayoutManagerViewModel : ObservableObject
+    private readonly LayoutManager layoutManager;
+
+    public LayoutManagerViewModel(LayoutManager layoutManager)
     {
-        private readonly LayoutManager layoutManager;
-
-        public LayoutManagerViewModel(LayoutManager layoutManager)
-        {
-            this.layoutManager = layoutManager;
-        }
+        this.layoutManager = layoutManager;
+    }
         
-        public bool LayoutLocked
+    public bool LayoutLocked
+    {
+        get => layoutManager.LayoutLocked;
+        set
         {
-            get => layoutManager.LayoutLocked;
-            set
-            {
-                layoutManager.LayoutLocked = value;
+            layoutManager.LayoutLocked = value;
 
-                OnPropertyChanged();
-            }
+            OnPropertyChanged();
         }
+    }
 
-        public bool LayoutRestoreUsingToBack
+    public bool LayoutRestoreUsingToBack
+    {
+        get => layoutManager.LayoutRestoreUsingToBack;
+        set
         {
-            get => layoutManager.LayoutRestoreUsingToBack;
-            set
-            {
-                layoutManager.LayoutRestoreUsingToBack = value;
+            layoutManager.LayoutRestoreUsingToBack = value;
 
-                OnPropertyChanged();
-            }
+            OnPropertyChanged();
         }
+    }
 
-        public bool StoreClosedHistory
+    public bool StoreClosedHistory
+    {
+        get => layoutManager.StoreClosedHistory;
+        set
         {
-            get => layoutManager.StoreClosedHistory;
-            set
-            {
-                layoutManager.StoreClosedHistory = value;
+            layoutManager.StoreClosedHistory = value;
 
-                OnPropertyChanged();
-            }
+            OnPropertyChanged();
         }
+    }
 
-        public bool DarkMode
+    public bool DarkMode
+    {
+        get => layoutManager.DarkMode;
+        set
         {
-            get => layoutManager.DarkMode;
-            set
-            {
-                layoutManager.DarkMode = value;
+            layoutManager.DarkMode = value;
 
-                OnPropertyChanged();
-            }
+            OnPropertyChanged();
         }
     }
 }

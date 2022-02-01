@@ -3,134 +3,135 @@ using System.Threading;
 using System.Threading.Tasks;
 using MvvmHelpers;
 
-namespace LayoutBrowser.Tab
+namespace LayoutBrowser.Tab;
+
+public interface IAutoRefreshSettingsViewModelFactory
 {
-    public interface IAutoRefreshSettingsViewModelFactory
+    public AutoRefreshSettingsViewModel ForSettings(bool autoRefreshEnabled, TimeSpan autoRefreshSpan, Func<Task> refreshCallback);
+}
+
+public class AutoRefreshSettingsViewModel : ObservableObject, IDisposable
+{
+    private readonly AutoRefreshGlobalOneSecondTimer timer;
+
+    private bool autoRefreshEnabled;
+    private TimeSpan autoRefreshSpan;
+    private readonly Func<Task> refreshCallback;
+
+    private DateTime refreshSpanStart;
+
+    private bool refreshTriggered;
+
+    public AutoRefreshSettingsViewModel(bool autoRefreshEnabled, TimeSpan autoRefreshSpan, Func<Task> refreshCallback, AutoRefreshGlobalOneSecondTimer timer)
     {
-        public AutoRefreshSettingsViewModel ForSettings(bool autoRefreshEnabled, TimeSpan autoRefreshSpan, Func<Task> refreshCallback);
+        this.autoRefreshEnabled = autoRefreshEnabled;
+        this.autoRefreshSpan = autoRefreshSpan <= TimeSpan.FromSeconds(1) ? TimeSpan.FromHours(1) : autoRefreshSpan;
+        this.refreshCallback = refreshCallback;
+        this.timer = timer;
+
+        refreshSpanStart = DateTime.Now;
+
+        timer.Timer += OnTimer;
     }
 
-    public class AutoRefreshSettingsViewModel : ObservableObject, IDisposable
+    private async void OnTimer()
     {
-        private readonly AutoRefreshGlobalOneSecondTimer timer;
-
-        private bool autoRefreshEnabled;
-        private TimeSpan autoRefreshSpan;
-        private readonly Func<Task> refreshCallback;
-
-        private DateTime refreshSpanStart;
-
-        private bool refreshTriggered;
-
-        public AutoRefreshSettingsViewModel(bool autoRefreshEnabled, TimeSpan autoRefreshSpan, Func<Task> refreshCallback, AutoRefreshGlobalOneSecondTimer timer)
+        if (!autoRefreshEnabled)
         {
-            this.autoRefreshEnabled = autoRefreshEnabled;
-            this.autoRefreshSpan = autoRefreshSpan <= TimeSpan.FromSeconds(1) ? TimeSpan.FromHours(1) : autoRefreshSpan;
-            this.refreshCallback = refreshCallback;
-            this.timer = timer;
-
-            refreshSpanStart = DateTime.Now;
-
-            timer.Timer += OnTimer;
+            return;
         }
 
-        private async void OnTimer()
+        if (TillNextRefresh > TimeSpan.Zero)
         {
-            if (!autoRefreshEnabled)
-            {
-                return;
-            }
-
-            if (TillNextRefresh > TimeSpan.Zero)
-            {
-                OnPropertyChanged(nameof(TillNextRefresh));
-                return;
-            }
-
-            if (refreshTriggered)
-            {
-                return;
-            }
-
-            RefreshTriggered = true;
-            try
-            {
-                await refreshCallback();
-            }
-            finally
-            {
-                RefreshSpanStart = DateTime.Now;
-
-                RefreshTriggered = false;
-            }
+            OnPropertyChanged(nameof(TillNextRefresh));
+            return;
         }
 
-        public bool RefreshTriggered
+        if (refreshTriggered)
         {
-            get => refreshTriggered;
-            set => SetProperty(ref refreshTriggered, value);
+            return;
         }
 
-        public bool AutoRefreshEnabled
+        RefreshTriggered = true;
+        try
         {
-            get => autoRefreshEnabled;
-            set
-            {
-                if (value && !autoRefreshEnabled)
-                {
-                    RefreshSpanStart = DateTime.Now;
-                }
-
-                SetProperty(ref autoRefreshEnabled, value);
-            }
+            await refreshCallback();
         }
-
-        public TimeSpan AutoRefreshSpan
+        finally
         {
-            get => autoRefreshSpan;
-            set
-            {
-                SetProperty(ref autoRefreshSpan, value);
-                OnPropertyChanged(nameof(ShowDateInSpanStart));
+            RefreshSpanStart = DateTime.Now;
 
-                RefreshSpanStart = DateTime.Now;
-            }
-        }
-
-        public bool ShowDateInSpanStart => autoRefreshSpan.TotalHours >= 12;
-
-        public TimeSpan TillNextRefresh => AutoRefreshSpan - (DateTime.Now - RefreshSpanStart);
-
-        public DateTime RefreshSpanStart
-        {
-            get => refreshSpanStart;
-            set
-            {
-                SetProperty(ref refreshSpanStart, value);
-                OnPropertyChanged(nameof(TillNextRefresh));
-            }
-        }
-
-        public void Dispose()
-        {
-            timer.Timer -= OnTimer;
+            RefreshTriggered = false;
         }
     }
 
-    public class AutoRefreshGlobalOneSecondTimer
+    public bool RefreshTriggered
     {
-        private readonly Timer timer;
+        get => refreshTriggered;
+        set => SetProperty(ref refreshTriggered, value);
+    }
 
-        public AutoRefreshGlobalOneSecondTimer()
+    public bool AutoRefreshEnabled
+    {
+        get => autoRefreshEnabled;
+        set
         {
-            timer = new Timer(OnTimer, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            if (value && !autoRefreshEnabled)
+            {
+                RefreshSpanStart = DateTime.Now;
+            }
+
+            SetProperty(ref autoRefreshEnabled, value);
         }
+    }
 
-        public event Action Timer;
-
-        private void OnTimer(object state)
+    public TimeSpan AutoRefreshSpan
+    {
+        get => autoRefreshSpan;
+        set
         {
-            Timer?.Invoke();
+            SetProperty(ref autoRefreshSpan, value);
+            OnPropertyChanged(nameof(ShowDateInSpanStart));
+
+            RefreshSpanStart = DateTime.Now;
         }
+    }
+
+    public bool ShowDateInSpanStart => autoRefreshSpan.TotalHours >= 12;
+
+    public TimeSpan TillNextRefresh => AutoRefreshSpan - (DateTime.Now - RefreshSpanStart);
+
+    public DateTime RefreshSpanStart
+    {
+        get => refreshSpanStart;
+        set
+        {
+            SetProperty(ref refreshSpanStart, value);
+            OnPropertyChanged(nameof(TillNextRefresh));
+        }
+    }
+
+    public void Dispose()
+    {
+        timer.Timer -= OnTimer;
+    }
+}
+
+public class AutoRefreshGlobalOneSecondTimer
+{
+    // this prevents timer from automatically disposing when its destructor is called
+    // ReSharper disable once NotAccessedField.Local
+    private readonly Timer timer;
+
+    public AutoRefreshGlobalOneSecondTimer()
+    {
+        timer = new Timer(OnTimer, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    public event Action Timer;
+
+    private void OnTimer(object state)
+    {
+        Timer?.Invoke();
     }
 }
