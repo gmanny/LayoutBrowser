@@ -23,8 +23,8 @@ public class ConsoleCommandProvider
         cmdSvc.AddCommand("find", DoFind, "Find window id by a fragment of URL or title. (Usage: find [url/title substring])");
         cmdSvc.AddCommand("wnd", DoWndInfo, "Print window info by its index. (Usage: wnd [index])");
 #pragma warning disable 4014
-        cmdSvc.AddCommand("refresh", p => DoRefresh(p), "Refresh all windows' native coordinates");
-        cmdSvc.AddCommand("rsave", p => DoRefreshSave(p), "Save current layout after updating windows' native coordinates");
+        cmdSvc.AddCommand("refresh", p => DoRefresh(), "Refresh all windows' native coordinates");
+        cmdSvc.AddCommand("rsave", p => DoRefreshSave(), "Save current layout after updating windows' native coordinates");
 #pragma warning restore 4014
     }
 
@@ -90,7 +90,7 @@ public class ConsoleCommandProvider
         return wnd;
     }
 
-    private async Task DoRefreshSave(string pars = null)
+    private async Task DoRefreshSave()
     {
         await DoRefresh();
 
@@ -104,7 +104,7 @@ public class ConsoleCommandProvider
         logger.LogInformation("Layout saved");
     }
 
-    private async Task DoRefresh(string pars = null)
+    private async Task DoRefresh()
     {
         await layoutMgr.UpdateNativeSizes();
 
