@@ -116,7 +116,12 @@ public class ScrollRestoreViewModel : ObservableObject, ITabFeatureViewModel
             CancellationTokenSource? old = Interlocked.Exchange(ref currentScrollRestore, cts);
             old?.Cancel();
 
-            await Task.Delay(scrollDelay, cts.Token);
+            try
+            {
+                await Task.Delay(scrollDelay, cts.Token);
+            }
+            catch (TaskCanceledException) { return; }
+            catch (OperationCanceledException) { return; }
 
             if (cts.IsCancellationRequested)
             {

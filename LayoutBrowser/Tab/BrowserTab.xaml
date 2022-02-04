@@ -463,9 +463,12 @@
                     <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Negative margin" PreviewMouseDown="OnNegativeMarginFeatureButtonPressed" Visibility="{Binding NegativeMargin.HasNonZeroValues, Converter={StaticResource BoolToVis}}">
                         <MenuItem.Style>
                             <Style TargetType="MenuItem">
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter Property="Margin" Value="0,0,0,1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding NegativeMargin.Enabled}" Value="True">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Margin" Value="0,0,0,0" />
                                         <Setter Property="BorderBrush" Value="ForestGreen" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -493,10 +496,12 @@
                     <MenuItem Focusable="False" Padding="0" PreviewMouseDown="OnUrlLockFeatureButtonPressed">
                         <MenuItem.Style>
                             <Style TargetType="MenuItem">
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Setter Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter Property="Margin" Value="1,0,0,1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding UrlVm.LockUrl}" Value="True">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Margin" Value="1,0,0,0" />
                                         <Setter Property="BorderBrush" Value="ForestGreen" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -592,10 +597,12 @@
                     <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Lock Scroll" PreviewMouseDown="OnLockScrollFeatureButtonPressed">
                         <MenuItem.Style>
                             <Style TargetType="MenuItem">
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Setter Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter Property="Margin" Value="1,0,0,1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ScrollRestore.LockScroll}" Value="True">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Margin" Value="1,0,0,0" />
                                         <Setter Property="BorderBrush" Value="ForestGreen" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -625,10 +632,12 @@
                     <MenuItem Focusable="False" Padding="0" ToolTip="Toggle Element blocker" PreviewMouseDown="OnElementBlockerFeatureButtonPressed" Visibility="{Binding ElementBlocker.HasRules, Converter={StaticResource BoolToVis}}">
                         <MenuItem.Style>
                             <Style TargetType="MenuItem">
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                <Setter Property="Margin" Value="1,0,0,0" />
+                                <Setter Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter Property="Margin" Value="1,0,0,1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ElementBlocker.Enabled}" Value="True">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Margin" Value="1,0,0,0" />
                                         <Setter Property="BorderBrush" Value="ForestGreen" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -658,7 +667,7 @@
         </DockPanel>
 
         <!-- Black panel which is displayed when tab contents are hidden -->
-        <Grid Grid.Row="1" Background="Black" MouseUp="TabHiddenBg_MouseUp">
+        <Grid Grid.Row="1" Background="Black" MouseUp="TabHiddenBg_MouseUp" ToolTip="Tab content is hidden, right click to reveal" ToolTipService.ShowDuration="999999999" ToolTipService.InitialShowDelay="0">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed" />
@@ -670,7 +679,7 @@
                 </Style>
             </Grid.Style>
         </Grid>
-
+        
         <!-- Browser control -->
         <wpf:WebView2 Grid.Row="1"
                       x:Name="webView"
