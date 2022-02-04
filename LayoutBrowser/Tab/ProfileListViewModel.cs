@@ -34,7 +34,7 @@ public class ProfileListViewModel : ObservableObject
         CollectionManager<ProfileListItem, ProfileItem> normalProfileMutator = new(
             p =>
             {
-                if (!profileItemHash.TryGetValue(p, out ProfileListItem pl))
+                if (!profileItemHash.TryGetValue(p, out ProfileListItem? pl))
                 {
                     pl = new ProfileListItem(p, ownerTab.Profile == p, OnProfileSelected);
                     profileItemHash[p] = pl;
@@ -69,12 +69,17 @@ public class ProfileListViewModel : ObservableObject
 
     private void OnProfileSelected(ProfileListItem pi) => OnProfileSelected(pi.Model);
 
-    private void OnProfileSelected(ProfileItem pi) => ownerTab.OnNewProfileSelected(pi);
+    private void OnProfileSelected(ProfileItem? profileItem)
+    {
+        ArgumentNullException.ThrowIfNull(profileItem);
+
+        ownerTab.OnNewProfileSelected(profileItem);
+    }
 }
 
 public class DefaultItemContainerTemplateSelector : ItemContainerTemplateSelector
 {
-    public override DataTemplate SelectTemplate(object item, ItemsControl parentItemsControl)
+    public override DataTemplate? SelectTemplate(object item, ItemsControl parentItemsControl)
     {
         return parentItemsControl.FindResource(item.GetType()) as DataTemplate;
     }
@@ -82,9 +87,9 @@ public class DefaultItemContainerTemplateSelector : ItemContainerTemplateSelecto
 
 public record ProfileListSeparator() : ProfileListItem(null, false, null);
 
-public record ProfileListCreateNew(Action SimpleSelected) : ProfileListItem(null, false, _ => SimpleSelected?.Invoke());
+public record ProfileListCreateNew(Action SimpleSelected) : ProfileListItem(null, false, _ => SimpleSelected());
 
-public record ProfileListItem(ProfileItem Model, bool IsChecked, Action<ProfileListItem> Selected)
+public record ProfileListItem(ProfileItem? Model, bool IsChecked, Action<ProfileListItem>? Selected)
 {
     public ICommand SelectedCommand => new WindowCommand(() => Selected?.Invoke(this));
 }

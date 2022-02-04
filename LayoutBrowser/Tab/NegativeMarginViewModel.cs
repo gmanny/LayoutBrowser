@@ -14,13 +14,13 @@ public interface INegativeMarginViewModelFactory
 }
 
 // document.body.style.margin = "-100px -100px -100px -100px"
-public class NegativeMarginViewModel : ObservableObject
+public class NegativeMarginViewModel : ObservableObject, ITabFeatureViewModel
 {
     private double marginLeft, marginTop, marginRight, marginBottom;
     private bool enabled, leftRightNativeMode;
     private bool hasNonZeroValues;
 
-    private WebView2 webView;
+    private WebView2? webView;
 
     public NegativeMarginViewModel(TabNegativeMargin model)
     {
@@ -140,7 +140,7 @@ public class NegativeMarginViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
     {
         SetNegativeMargin();
     }

@@ -14,16 +14,16 @@ public interface IScrollRestoreViewModelFactory
     public ScrollRestoreViewModel ForTab(LayoutWindowTab model);
 }
 
-public class ScrollRestoreViewModel : ObservableObject
+public class ScrollRestoreViewModel : ObservableObject, ITabFeatureViewModel
 {
     public const string EventType = "scroll";
 
     private bool navStopped;
     private Point? scrollRestore;
     private TimeSpan scrollDelay;
-    private CancellationTokenSource currentScrollRestore;
+    private CancellationTokenSource? currentScrollRestore;
 
-    private WebView2 webView;
+    private WebView2? webView;
 
     private Point lastScroll;
     private Point lockedScroll;
@@ -75,12 +75,12 @@ public class ScrollRestoreViewModel : ObservableObject
         }
     }
 
-    private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
     {
         RestoreScroll();
     }
 
-    private void OnNavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
+    private void OnNavigationStarted(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
         OnNavStarted();
     }
@@ -99,6 +99,11 @@ public class ScrollRestoreViewModel : ObservableObject
 
     private async void RestoreScroll()
     {
+        if (webView == null)
+        {
+            throw new Exception($"Got {nameof(RestoreScroll)} while webView is not initialized");
+        }
+
         try
         {
             Point? restore = scrollRestore;
@@ -108,7 +113,7 @@ public class ScrollRestoreViewModel : ObservableObject
             }
 
             CancellationTokenSource cts = new();
-            CancellationTokenSource old = Interlocked.Exchange(ref currentScrollRestore, cts);
+            CancellationTokenSource? old = Interlocked.Exchange(ref currentScrollRestore, cts);
             old?.Cancel();
 
             await Task.Delay(scrollDelay, cts.Token);
@@ -131,7 +136,7 @@ public class ScrollRestoreViewModel : ObservableObject
     {
         navStopped = false;
 
-        CancellationTokenSource scrollRestoreOp = Interlocked.Exchange(ref currentScrollRestore, null);
+        CancellationTokenSource? scrollRestoreOp = Interlocked.Exchange(ref currentScrollRestore, null);
         scrollRestoreOp?.Cancel();
     }
 }

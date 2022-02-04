@@ -48,7 +48,7 @@ namespace LayoutBrowser.Layout
 
         public Guid id = Guid.NewGuid();
 
-        public string iconPath;
+        public string? iconPath;
 
         public bool? overrideToBack;
 
@@ -76,11 +76,11 @@ namespace LayoutBrowser.Layout
 
     public class LayoutWindowTab
     {
-        public string url;
+        public string? url;
         public bool lockUrl;
 
         public string title = "New Tab";
-        public string overrideTitle;
+        public string? overrideTitle;
         
         [DefaultValue(ProfileManager.DefaultProfile)]
         public string profile = ProfileManager.DefaultProfile;
@@ -97,11 +97,11 @@ namespace LayoutBrowser.Layout
         public bool lockScroll;
         public TimeSpan scrollDelay = TimeSpan.Zero;
 
-        public TabNegativeMargin negativeMargin;
+        public TabNegativeMargin? negativeMargin;
 
         public bool dontRefreshOnBrowserFail;
 
-        public ElementBlockingSettings elementBlocking;
+        public ElementBlockingSettings? elementBlocking;
 
         public LayoutWindowTab Copy() => new()
         {
@@ -118,9 +118,9 @@ namespace LayoutBrowser.Layout
             scrollY = scrollY,
             scrollDelay = scrollDelay,
             lockScroll = lockScroll,
-            negativeMargin = negativeMargin.Copy(),
+            negativeMargin = negativeMargin?.Copy(),
             dontRefreshOnBrowserFail = dontRefreshOnBrowserFail,
-            elementBlocking = elementBlocking.Copy()
+            elementBlocking = elementBlocking?.Copy()
         };
     }
 
@@ -143,19 +143,19 @@ namespace LayoutBrowser.Layout
     public class ElementBlockingSettings
     {
         public bool enabled;
-        public List<ElementBlockingRule> rules;
+        public List<ElementBlockingRule>? rules;
 
         public ElementBlockingSettings Copy() => new()
         {
             enabled = enabled,
-            rules = rules.Select(r => r.Copy()).ToList()
+            rules = rules?.Select(r => r.Copy()).ToList()
         };
     }
 
     public class ElementBlockingRule
     {
         public bool enabled;
-        public string selector;
+        public string selector = "";
 
         public ElementBlockingRule Copy() => new()
         {
@@ -172,16 +172,11 @@ namespace LayoutBrowser.Layout
 
     public interface IClosedItem { }
 
-    public class ClosedLayoutWindow : IClosedItem
-    {
-        public LayoutWindow window;
-    }
+    // ReSharper disable InconsistentNaming
+#pragma warning disable IDE1006 // Naming Styles
+    public record ClosedLayoutWindow(LayoutWindow window) : IClosedItem;
 
-    public class ClosedLayoutTab : IClosedItem
-    {
-        public LayoutWindowTab tab;
-
-        public Guid windowId;
-        public int tabPosition;
-    }
+    public record ClosedLayoutTab(LayoutWindowTab tab, Guid windowId, int tabPosition) : IClosedItem;
+#pragma warning restore IDE1006 // Naming Styles
+    // ReSharper restore InconsistentNaming
 }

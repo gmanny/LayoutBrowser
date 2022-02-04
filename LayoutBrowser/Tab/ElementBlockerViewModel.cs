@@ -16,10 +16,10 @@ namespace LayoutBrowser.Tab;
 
 public interface IElementBlockerViewModelFactory
 {
-    ElementBlockerViewModel ForModel(ElementBlockingSettings model);
+    ElementBlockerViewModel ForModel(ElementBlockingSettings? model);
 }
 
-public class ElementBlockerViewModel : ObservableObject
+public class ElementBlockerViewModel : ObservableObject, ITabFeatureViewModel
 {
     private const string StartMsgType = "elementBlockStart";
     private const string InitMsgType = "elementBlockInit";
@@ -33,10 +33,10 @@ public class ElementBlockerViewModel : ObservableObject
     private bool enabled;
     private bool hasRules;
 
-    private WebView2 webView;
-    private WebView2MessagingService msgr;
+    private WebView2? webView;
+    private WebView2MessagingService? msgr;
 
-    public ElementBlockerViewModel(ElementBlockingSettings model)
+    public ElementBlockerViewModel(ElementBlockingSettings? model)
     {
         enabled = model?.enabled ?? false;
 
@@ -93,6 +93,11 @@ public class ElementBlockerViewModel : ObservableObject
 
     private void OnEnabledChanged(bool enbl)
     {
+        if (msgr == null)
+        {
+            return;
+        }
+
         if (enbl)
         {
             msgr.PostJsonMessage(new RulesChangedMessage
@@ -130,7 +135,7 @@ public class ElementBlockerViewModel : ObservableObject
 
     private void OnRuleAdded(ElementBlockerRuleItemViewModel ruleVm)
     {
-        if (!enabled || !ruleVm.Enabled)
+        if (!enabled || !ruleVm.Enabled || msgr == null)
         {
             return;
         }
@@ -159,7 +164,7 @@ public class ElementBlockerViewModel : ObservableObject
 
     private void OnRuleRemoved(ElementBlockerRuleItemViewModel ruleVm)
     {
-        if (!enabled || !ruleVm.Enabled)
+        if (!enabled || !ruleVm.Enabled || msgr == null)
         {
             return;
         }
@@ -173,7 +178,7 @@ public class ElementBlockerViewModel : ObservableObject
 
     private void OnRuleSelectorChanged(string prevSelector, string curSelector, ElementBlockerRuleItemViewModel model)
     {
-        if (!enabled || !model.Enabled || prevSelector == curSelector)
+        if (!enabled || !model.Enabled || prevSelector == curSelector || msgr == null)
         {
             return;
         }
@@ -190,7 +195,7 @@ public class ElementBlockerViewModel : ObservableObject
     {
         UpdateHasRules();
 
-        if (!enabled)
+        if (!enabled || msgr == null)
         {
             return;
         }
@@ -215,14 +220,8 @@ public class ElementBlockerViewModel : ObservableObject
 
     static ElementBlockerViewModel()
     {
-        using Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("LayoutBrowser.Tab.ElementBlockerUserScript.js");
-
-        if (resource == null)
-        {
-            throw new Exception("Couldn't find an element blocker user-script");
-        }
-
-        using StreamReader reader = new StreamReader(resource);
+        using Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("LayoutBrowser.Tab.ElementBlockerUserScript.js") ?? throw new Exception("Couldn't find an element blocker user-script");
+        using StreamReader reader = new(resource);
 
         BlockingUserScript = reader.ReadToEnd();
     }
@@ -239,6 +238,11 @@ public class ElementBlockerViewModel : ObservableObject
 
     private void OnElementBlockerScriptStart(EmptyMessage msg)
     {
+        if (msgr == null)
+        {
+            return;
+        }
+
         msgr.PostJsonMessage(new RulesChangedMessage
         {
             type = InitMsgType,
@@ -320,7 +324,7 @@ public class ElementBlockerRuleItemViewModel : ObservableObject, IDisposable, IE
                 return;
             }
 
-            enabledHandler?.Invoke(value, this);
+            enabledHandler(value, this);
         }
     }
 
@@ -338,13 +342,15 @@ public class ElementBlockerRuleItemViewModel : ObservableObject, IDisposable, IE
                 return;
             }
 
-            selectorChangedHandler?.Invoke(prev, value, this);
+            selectorChangedHandler(prev, value, this);
         }
     }
 
     public void Dispose()
     {
         disposed = true;
+
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -352,7 +358,7 @@ public class EmptyMessage { }
 
 public class RulesChangedMessage
 {
-    public string type;
-    public List<string> addedRules;
-    public List<string> removedRules;
+    public string? type;
+    public List<string>? addedRules;
+    public List<string>? removedRules;
 }

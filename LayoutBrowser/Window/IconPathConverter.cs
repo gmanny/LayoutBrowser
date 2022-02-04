@@ -9,7 +9,7 @@ namespace LayoutBrowser.Window;
 
 public class IconPathConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value == null || value is not string iconPath || iconPath.IsNullOrEmpty() || !File.Exists(iconPath))
         {

@@ -23,24 +23,25 @@ public class ConsoleCommandProvider
         cmdSvc.AddCommand("find", DoFind, "Find window id by a fragment of URL or title. (Usage: find [url/title substring])");
         cmdSvc.AddCommand("wnd", DoWndInfo, "Print window info by its index. (Usage: wnd [index])");
 #pragma warning disable 4014
-        cmdSvc.AddCommand("refresh", p => DoRefresh(), "Refresh all windows' native coordinates");
-        cmdSvc.AddCommand("rsave", p => DoRefreshSave(), "Save current layout after updating windows' native coordinates");
+        cmdSvc.AddCommand("refresh", _ => DoRefresh(), "Refresh all windows' native coordinates");
+        cmdSvc.AddCommand("rsave", _ => DoRefreshSave(), "Save current layout after updating windows' native coordinates");
 #pragma warning restore 4014
     }
 
     private void DoWndInfo(string pars)
     {
-        WindowItem wnd = FindByIndex(pars);
+        WindowItem? wnd = FindByIndex(pars);
         if (wnd == null)
         {
             return;
         }
 
         LayoutBrowserWindowViewModel vm = wnd.ViewModel;
-        BrowserTabViewModel curTabVm = wnd.ViewModel.CurrentTab.ViewModel;
+        BrowserTabViewModel? curTabVm = wnd.ViewModel.CurrentTab?.ViewModel;
         logger.LogInformation($"Window #{wnd.ViewModel.Index} {wnd.ViewModel.Id}:\r\n" +
-                              $"title = {curTabVm.Title}{(curTabVm.Title != curTabVm.BrowserTitle ? $" / {curTabVm.BrowserTitle}" : "")}\r\n" +
-                              $"url = {curTabVm.UrlVm.Url}\r\n" +
+                              (curTabVm != null ?
+                                  $"title = {curTabVm.Title}{(curTabVm.Title != curTabVm.BrowserTitle ? $" / {curTabVm.BrowserTitle}" : "")}\r\n" +
+                                  $"url = {curTabVm.UrlVm.Url}\r\n" : "<no current tab>\r\n") +
                               $"native coords: left = {(int) vm.LeftNative}, top = {(int) vm.TopNative}, width = {(int) vm.WidthNative}, height = {(int) vm.HeightNative}\r\n" +
                               $"initial native coords: left = {(int) vm.LeftNativeInit}, top = {(int) vm.TopNativeInit}, width = {(int) vm.WidthNativeInit}, height = {(int) vm.HeightNativeInit}");
     }
@@ -67,12 +68,12 @@ public class ConsoleCommandProvider
         }
     }
 
-    private void DoForceQuit(string pars = null)
+    private void DoForceQuit(string? pars = null)
     {
         Environment.FailFast("Force quit triggered by console command");
     }
 
-    private WindowItem FindByIndex(string indexStr)
+    private WindowItem? FindByIndex(string indexStr)
     {
         if (!Int32.TryParse(indexStr, out int windowIndex))
         {
@@ -80,7 +81,7 @@ public class ConsoleCommandProvider
             return null;
         }
 
-        WindowItem wnd = layoutMgr.Windows.FirstOrDefault(w => w.ViewModel.Index == windowIndex);
+        WindowItem? wnd = layoutMgr.Windows.FirstOrDefault(w => w.ViewModel.Index == windowIndex);
         if (wnd == null)
         {
             logger.LogInformation($"Couldn't find window with index {windowIndex}");
@@ -97,7 +98,7 @@ public class ConsoleCommandProvider
         DoSaveCmd();
     }
 
-    private void DoSaveCmd(string pars = null)
+    private void DoSaveCmd(string? pars = null)
     {
         layoutMgr.SaveLayout();
             

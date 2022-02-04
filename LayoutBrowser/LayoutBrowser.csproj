@@ -7,6 +7,7 @@
     
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,7 +25,7 @@
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.705.50" />
-    <PackageReference Include="Ninject.Extensions.Factory" Version="3.3.2" />
+    <PackageReference Include="Ninject.Extensions.Factory" Version="3.3.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -85,13 +85,13 @@ public partial class RuntimeInstallWindow
     {
         viewModel.StartInstall();
 
-        string programPath = Assembly.GetEntryAssembly()?.Location;
+        string? programPath = Assembly.GetEntryAssembly()?.Location;
         if (programPath == null)
         {
             throw new Exception("Program location not found");
         }
 
-        string programDir = Path.GetDirectoryName(Path.GetFullPath(programPath));
+        string? programDir = Path.GetDirectoryName(Path.GetFullPath(programPath));
         if (programDir == null)
         {
             throw new Exception("Program directory not found");

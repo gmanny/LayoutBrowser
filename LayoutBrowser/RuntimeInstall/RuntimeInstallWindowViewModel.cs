@@ -22,7 +22,7 @@ public class RuntimeInstallWindowViewModel : ObservableObject
         set => SetProperty(ref isInstallFailed, value);
     }
 
-    public bool IsWin10 => Environment.OSVersion.Version.Major >= 10;
+    public static bool IsWin10 => Environment.OSVersion.Version.Major >= 10;
 
     public void StartInstall()
     {
@@ -38,7 +38,7 @@ public class RuntimeInstallWindowViewModel : ObservableObject
 
     public static bool IsRuntimeAvailable()
     {
-        string ver = null;
+        string? ver = null;
         try
         {
             ver = CoreWebView2Environment.GetAvailableBrowserVersionString();

@@ -114,6 +114,8 @@ public class AutoRefreshSettingsViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         timer.Timer -= OnTimer;
+
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -121,16 +123,18 @@ public class AutoRefreshGlobalOneSecondTimer
 {
     // this prevents timer from automatically disposing when its destructor is called
     // ReSharper disable once NotAccessedField.Local
+#pragma warning disable IDE0052 // Remove unread private members
     private readonly Timer timer;
+#pragma warning restore IDE0052 // Remove unread private members
 
     public AutoRefreshGlobalOneSecondTimer()
     {
         timer = new Timer(OnTimer, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
     }
 
-    public event Action Timer;
+    public event Action? Timer;
 
-    private void OnTimer(object state)
+    private void OnTimer(object? state)
     {
         Timer?.Invoke();
     }

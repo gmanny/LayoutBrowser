@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using LanguageExt;
 using LayoutBrowser.Layout;
@@ -37,11 +38,11 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
     private readonly ICommand refreshBtnCommand;
     private readonly ICommand goBtnCommand;
 
-    private WebView2 webView;
-    private WebView2MessagingService messenger;
+    private WebView2? webView;
+    private WebView2MessagingService? messenger;
 
     private string browserTitle;
-    private string overrideTitle;
+    private string? overrideTitle;
     private double zoomFactor;
     private double storedZoomFactor;
     private bool hidden;
@@ -156,7 +157,7 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    public string OverrideTitle
+    public string? OverrideTitle
     {
         get => overrideTitle;
         set
@@ -179,7 +180,7 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
         ZoomFactor = zf;
     }
 
-    public WebView2 WebView
+    public WebView2? WebView
     {
         get => webView;
         set
@@ -188,6 +189,8 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
             {
                 throw new InvalidOperationException("Web view is intended to be set only once at init");
             }
+
+            ArgumentNullException.ThrowIfNull(value);
 
             SetProperty(ref webView, value);
 
@@ -217,40 +220,45 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
         urlVm.AfterInit();
     }
 
-    public event Action<BrowserTabViewModel, CoreWebView2NewWindowRequestedEventArgs> NewWindowRequested;
+    public event Action<BrowserTabViewModel, CoreWebView2NewWindowRequestedEventArgs>? NewWindowRequested;
 
-    private void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+    private void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
     {
         NewWindowRequested?.Invoke(this, e);
     }
 
-    public event Action<BrowserTabViewModel> CloseRequested;
+    public event Action<BrowserTabViewModel>? CloseRequested;
 
-    private void OnCloseRequested(object sender, object e)
+    private void OnCloseRequested(object? sender, object e)
     {
         CloseRequested?.Invoke(this);
     }
 
-    public event Action<BrowserTabViewModel> ControlInitialized;
+    public event Action<BrowserTabViewModel>? ControlInitialized;
 
     private void OnControlInitialized()
     {
         ControlInitialized?.Invoke(this);
     }
 
-    private void OnTitleChanged(object sender, object e)
+    private void OnTitleChanged(object? sender, object e)
     {
+        if (webView == null)
+        {
+            return;
+        }
+
         BrowserTitle = webView.CoreWebView2.DocumentTitle;
     }
 
-    public void OnNavigationStarted(CoreWebView2NavigationStartingEventArgs e)
+    public void OnNavigationStarted()
     {
         storedZoomFactor = zoomFactor;
     }
 
-    public event Action<BrowserTabViewModel> NavigationCompleted;
+    public event Action<BrowserTabViewModel>? NavigationCompleted;
 
-    public void OnNavigationCompleted(CoreWebView2NavigationCompletedEventArgs e)
+    public void OnNavigationCompleted()
     {
         NavigationCompleted?.Invoke(this);
 
@@ -264,7 +272,7 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    public event Action<ProfileItem> NewProfileSelected;
+    public event Action<ProfileItem>? NewProfileSelected;
 
     public void OnNewProfileSelected(ProfileItem piModel)
     {
@@ -275,5 +283,12 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
     {
         autoRefresh.Dispose();
         messenger?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
+}
+
+public interface ITabFeatureViewModel
+{
+    public Task PlugIntoWebView(WebView2 wv, WebView2MessagingService messenger);
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,7 +29,7 @@ public class LayoutManager
     private readonly List<WindowItem> windows = new();
     private readonly ConcurrentDictionary<Guid, WindowItem> windowHash = new();
 
-    private ClosedItemHistory closedItems;
+    private ClosedItemHistory closedItems = new();
 
     private bool layoutLocked;
     private bool minimizedAll;
@@ -112,7 +111,7 @@ public class LayoutManager
         {
             try
             {
-                state = ser.Deserialize<LayoutState>(Settings.Default.Layout);
+                state = ser.Deserialize<LayoutState>(Settings.Default.Layout) ?? new LayoutState();
             }
             catch (Exception e)
             {
@@ -184,7 +183,7 @@ public class LayoutManager
         }
         else
         {
-            closedItems = ser.Deserialize<ClosedItemHistory>(Settings.Default.ClosedHistory);
+            closedItems = ser.Deserialize<ClosedItemHistory>(Settings.Default.ClosedHistory) ?? new ClosedItemHistory();
         }
 
         LayoutState state = FromSettings();
@@ -368,12 +367,11 @@ public class LayoutManager
             return;
         }
 
-        closedItems.closedItems.Add(new ClosedLayoutTab
-        {
-            tab = tabModel,
-            tabPosition = tabIndex,
-            windowId = wnd.Id
-        });
+        closedItems.closedItems.Add(new ClosedLayoutTab(
+            tab: tabModel,
+            tabPosition: tabIndex,
+            windowId: wnd.Id
+        ));
 
         TrimClosedItems();
     }
@@ -393,7 +391,7 @@ public class LayoutManager
         wnd.ViewModel.AddForeignTab(item, true);
     }
 
-    private async Task OnOpenNewWindow(WindowTabItem item, LayoutBrowserWindowViewModel parentWindow, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
+    private async Task OnOpenNewWindow(WindowTabItem? item, LayoutBrowserWindowViewModel parentWindow, CoreWebView2NewWindowRequestedEventArgs? e, bool foreground)
     {
         (WindowItem wnd, _) = AddWindow(new LayoutWindow
         {
@@ -401,7 +399,7 @@ public class LayoutManager
             {
                 new LayoutWindowTab
                 {
-                    profile = item.ViewModel.Profile.Name,
+                    profile = item?.ViewModel.Profile.Name ?? ProfileManager.DefaultProfile,
                     url = null,
                     title = "New Tab"
                 }
@@ -414,21 +412,24 @@ public class LayoutManager
             notInLayout = layoutLocked || minimizedAll
         }, !foreground);
 
-        if (e != null)
-        {
-            await wnd.ViewModel.CurrentTab.Control.webView.EnsureCoreWebView2Async();
-            if (wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2 != null)
+        WindowTabItem? ct = wnd.ViewModel.CurrentTab;
+        if (ct != null) {
+            if (e != null)
             {
-                e.NewWindow = wnd.ViewModel.CurrentTab.Control.webView.CoreWebView2;
-                e.Handled = true;
+                await ct.Control.webView.EnsureCoreWebView2Async();
+                if (ct.Control.webView.CoreWebView2 != null)
+                {
+                    e.NewWindow = ct.Control.webView.CoreWebView2;
+                    e.Handled = true;
+                }
             }
-        }
-        else
-        {
-            await wnd.Window.Dispatcher.BeginInvoke(() =>
+            else
             {
-                wnd.ViewModel.CurrentTab.Control.urlBar.Focus();
-            }, DispatcherPriority.Background);
+                await wnd.Window.Dispatcher.BeginInvoke(() =>
+                {
+                    ct.Control.urlBar.Focus();
+                }, DispatcherPriority.Background);
+            }
         }
     }
 
@@ -441,10 +442,7 @@ public class LayoutManager
 
         if (item.ViewModel.Tabs.NonEmpty())
         {
-            closedItems.closedItems.Add(new ClosedLayoutWindow
-            {
-                window = item.ViewModel.ToModel()
-            });
+            closedItems.closedItems.Add(new ClosedLayoutWindow(item.ViewModel.ToModel()));
 
             TrimClosedItems();
         }
@@ -535,7 +533,7 @@ public class LayoutManager
 
             case ClosedLayoutTab tab:
             {
-                if (!windowHash.TryGetValue(tab.windowId, out WindowItem wnd))
+                if (!windowHash.TryGetValue(tab.windowId, out WindowItem? wnd))
                 {
                     if (windows.NonEmpty())
                     {

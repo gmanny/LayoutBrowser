@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Monitor.ServiceCommon.Services;
 using Monitor.ServiceCommon.Util;
 using MonitorCommon;
-using MvvmHelpers;
 using Newtonsoft.Json;
 
 namespace LayoutBrowser.Layout;
@@ -37,11 +36,7 @@ public class ProfileManager
 
     public ProfileItem AddProfile(string name, string caption)
     {
-        ProfileItem item = new()
-        {
-            Name = name,
-            Caption = caption
-        };
+        ProfileItem item = new(name, caption);
 
         profiles.Add(item);
 
@@ -69,16 +64,12 @@ public class ProfileManager
         }
         else
         {
-            items = ser.Deserialize<List<ProfileItem>>(Settings.Default.Profiles);
+            items = ser.Deserialize<List<ProfileItem>>(Settings.Default.Profiles) ?? new List<ProfileItem>();
         }
 
         if (items.IsEmpty())
         {
-            items.Add(new ProfileItem
-            {
-                Name = DefaultProfile,
-                Caption = "Default"
-            });
+            items.Add(new ProfileItem(DefaultProfile, "Default"));
         }
 
         return items;
@@ -91,21 +82,4 @@ public class ProfileManager
     }
 }
 
-public class ProfileItem : ObservableObject
-{
-    private string name;
-    private string caption;
-
-    public string Name
-    {
-        get => name;
-        set => SetProperty(ref name, value);
-    }
-
-    // friendly name
-    public string Caption
-    {
-        get => caption;
-        set => SetProperty(ref caption, value);
-    }
-}
+public record ProfileItem(string Name, string Caption);

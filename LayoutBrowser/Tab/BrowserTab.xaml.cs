@@ -30,14 +30,14 @@ public partial class BrowserTab
 
     public BrowserTabViewModel ViewModel => viewModel;
 
-    private void OnNavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
+    private void OnNavigationStarted(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
-        viewModel.OnNavigationStarted(e);
+        viewModel.OnNavigationStarted();
     }
 
-    private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
     {
-        viewModel.OnNavigationCompleted(e);
+        viewModel.OnNavigationCompleted();
     }
 
     public void Dispose()

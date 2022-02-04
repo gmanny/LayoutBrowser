@@ -46,18 +46,18 @@ public class WebView2MessagingService : IDisposable
         webView.CoreWebView2.PostWebMessageAsJson(ser.Serialize(message));
     }
 
-    private void OnMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+    private void OnMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     { 
         string json = e.WebMessageAsJson;
 
-        MessageTypeModel type = ser.Deserialize<MessageTypeModel>(json);
+        MessageTypeModel? type = ser.Deserialize<MessageTypeModel>(json);
 
-        if (type.type.IsNullOrEmpty())
+        if (type == null || type.type.IsNullOrEmpty())
         {
             return;
         }
 
-        if (handlers.TryGetValue(type.type, out IMessageHandler handler))
+        if (handlers.TryGetValue(type.type, out IMessageHandler? handler))
         {
             handler.HandleMessage(json);
         }
@@ -66,12 +66,14 @@ public class WebView2MessagingService : IDisposable
     public void Dispose()
     {
         webView.WebMessageReceived -= OnMessageReceived;
+
+        GC.SuppressFinalize(this);
     }
 }
 
 public class MessageTypeModel
 {
-    public string type;
+    public string? type;
 }
 
 public interface IMessageHandler
@@ -85,9 +87,12 @@ public record MessageHandler<TMessage>(Action<TMessage> Handler, JsonSerializer 
     {
         try
         {
-            TMessage msg = Ser.Deserialize<TMessage>(json);
+            TMessage? msg = Ser.Deserialize<TMessage>(json);
 
-            Handler(msg);
+            if (msg != null)
+            {
+                Handler(msg);
+            }
         }
         catch (Exception e)
         {

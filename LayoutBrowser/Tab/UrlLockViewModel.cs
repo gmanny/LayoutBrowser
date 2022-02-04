@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,27 +20,27 @@ public interface IUrlLockViewModelFactory
     public UrlLockViewModel ForTab(LayoutWindowTab model);
 }
 
-public class UrlLockViewModel : ObservableObject
+public class UrlLockViewModel : ObservableObject, ITabFeatureViewModel
 {
     private readonly ILogger logger;
         
-    private Uri browserSource;
-    private string url;
+    private Uri? browserSource;
+    private string? url;
     private bool browserSourceExposed;
     private bool isNavigating;
     private string refreshButtonText = "↻", refreshButtonHint = "Refresh (F5)";
 
-    private TaskCompletionSource<Unit> refreshComplete;
+    private TaskCompletionSource<Unit>? refreshComplete;
 
     private bool lockUrl;
-    private string lockedUrl;
+    private string? lockedUrl;
     private int lockUrlRetries;
     private bool lockUrlSettled = true;
     private bool dontRefreshOnBrowserFail;
     private DateTime? lastFail;
     private bool isFailNavigation;
         
-    private WebView2 webView;
+    private WebView2? webView;
 
     public UrlLockViewModel(LayoutWindowTab model, ILogger logger)
     {
@@ -78,8 +80,19 @@ public class UrlLockViewModel : ObservableObject
 
     public bool HasLastFailDate => lastFail.HasValue;
 
-    private void OnProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs e)
+    [MemberNotNull(nameof(webView))]
+    private void CheckWebView([CallerMemberName] string memberName = "n/a")
     {
+        if (webView == null)
+        {
+            throw new Exception($"WebView should not be null when {memberName} is called");
+        }
+    }
+
+    private void OnProcessFailed(object? sender, CoreWebView2ProcessFailedEventArgs e)
+    {
+        CheckWebView();
+
         LastFail = DateTime.Now;
 
         if (dontRefreshOnBrowserFail)
@@ -101,8 +114,10 @@ public class UrlLockViewModel : ObservableObject
         ExposeBrowserSource();
     }
 
-    private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
     {
+        CheckWebView();
+
         IsNavigating = false;
 
         webView.Dispatcher.BeginInvoke(async () =>
@@ -143,7 +158,7 @@ public class UrlLockViewModel : ObservableObject
         }, DispatcherPriority.Background);
     }
 
-    private void OnNavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
+    private void OnNavigationStarted(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
         if (lockUrl && lockUrlSettled)
         {
@@ -153,9 +168,9 @@ public class UrlLockViewModel : ObservableObject
         IsNavigating = true;
     }
 
-    public Uri InternalBrowserSource => browserSource;
+    public Uri? InternalBrowserSource => browserSource;
 
-    public Uri BrowserSource
+    public Uri? BrowserSource
     {
         get => browserSourceExposed ? browserSource : null;
         set
@@ -170,7 +185,7 @@ public class UrlLockViewModel : ObservableObject
 
             logger.LogDebug($"Source changed to {value}");
 
-            if (value.ToString() == "about:blank")
+            if (value == null || value.ToString() == "about:blank")
             {
                 Url = "";
             }
@@ -203,6 +218,8 @@ public class UrlLockViewModel : ObservableObject
 
     public void LockUrlEx()
     {
+        CheckWebView();
+
         if (lockUrl)
         {
             return;
@@ -213,7 +230,7 @@ public class UrlLockViewModel : ObservableObject
         webView.CoreWebView2.Navigate(lockedUrl);
     }
 
-    public string LockedUrl => lockUrl ? lockedUrl : null;
+    public string? LockedUrl => lockUrl ? lockedUrl : null;
 
     public int LockUrlRetries
     {
@@ -221,7 +238,7 @@ public class UrlLockViewModel : ObservableObject
         private set => SetProperty(ref lockUrlRetries, value);
     }
 
-    public string Url
+    public string? Url
     {
         get => url;
         set => SetProperty(ref url, value);
@@ -273,7 +290,7 @@ public class UrlLockViewModel : ObservableObject
         }
 
         TaskCompletionSource<Unit> newComplete = new();
-        TaskCompletionSource<Unit> oldComplete = Interlocked.Exchange(ref refreshComplete, newComplete);
+        TaskCompletionSource<Unit>? oldComplete = Interlocked.Exchange(ref refreshComplete, newComplete);
         oldComplete?.TrySetResult(Unit.Default);
 
         await webView.Dispatcher.BeginInvoke(Refresh, DispatcherPriority.Background);
@@ -283,6 +300,13 @@ public class UrlLockViewModel : ObservableObject
 
     public async Task ExecuteGo()
     {
+        if (url.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        CheckWebView();
+
         await webView.EnsureCoreWebView2Async();
 
         logger.LogDebug($"Navigating to {url}");
@@ -314,6 +338,8 @@ public class UrlLockViewModel : ObservableObject
 
     public void HandleRefreshStopButtonPress()
     {
+        CheckWebView();
+
         if (isNavigating)
         {
             webView.Stop();
@@ -324,10 +350,12 @@ public class UrlLockViewModel : ObservableObject
         }
     }
 
-    public event Action PreRefresh;
+    public event Action? PreRefresh;
 
     public async void Refresh()
     {
+        CheckWebView();
+
         PreRefresh?.Invoke();
 
         await webView.EnsureCoreWebView2Async();

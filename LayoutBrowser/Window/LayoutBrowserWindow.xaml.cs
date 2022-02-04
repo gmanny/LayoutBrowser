@@ -56,8 +56,8 @@ public partial class LayoutBrowserWindow
         AddShortcut(Key.Tab, ModifierKeys.Control | ModifierKeys.Shift, viewModel.PrevTab);
         AddShortcut(Key.Left, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt, viewModel.MovePrev);
         AddShortcut(Key.Right, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt, viewModel.MoveNext);
-        AddShortcut(Key.Q, ModifierKeys.Alt, viewModel.Quit);
-        AddShortcut(Key.Q, ModifierKeys.Control, viewModel.Quit);
+        AddShortcut(Key.Q, ModifierKeys.Alt, LayoutBrowserWindowViewModel.Quit);
+        AddShortcut(Key.Q, ModifierKeys.Control, LayoutBrowserWindowViewModel.Quit);
         AddShortcut(Key.Escape, ModifierKeys.None, viewModel.StopLoading);
         AddShortcut(Key.F5, ModifierKeys.None, viewModel.Refresh);
         AddShortcut(Key.F6, ModifierKeys.None, viewModel.FocusAddressBar);
@@ -90,7 +90,7 @@ public partial class LayoutBrowserWindow
         return new Rectangle(r.left, r.top, r.right - r.left, r.bottom - r.top);
     }
 
-    public event Action LayoutRestoreComplete;
+    public event Action? LayoutRestoreComplete;
 
     private async void FirstBackgroundDispatch()
     {
@@ -98,7 +98,7 @@ public partial class LayoutBrowserWindow
         {
             // no native size saved in settings, restore managed window size
             PresentationSource source = PresentationSource.FromVisual(this);
-            CompositionTarget ct = source?.CompositionTarget;
+            CompositionTarget? ct = source?.CompositionTarget;
             double dpiX = ct?.TransformToDevice.M11 ?? 1.0;
             double dpiY = ct?.TransformToDevice.M22 ?? 1.0;
 
@@ -222,7 +222,7 @@ public partial class LayoutBrowserWindow
 
         cachedHandle = new WindowInteropHelper(this).Handle;
 
-        Win32MaximizeHelper.FixMaximize(this, resizeBorderMrg.Margin, viewModel);
+        Win32MaximizeHelper.FixMaximize(this, resizeBorderMrg.Margin);
     }
 
     public void BringToFrontWithoutFocus()
@@ -260,9 +260,6 @@ public partial class LayoutBrowserWindow
     [DllImport("user32.dll")]
     static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-    private const int WS_EX_NOACTIVATE = 0x08000000;
-    private const int GWL_EXSTYLE = -20;
-
     private const int HWND_TOP = 0;
     private const int HWND_BOTTOM = 1;
     private const int HWND_TOPMOST = -1;
@@ -277,7 +274,7 @@ public partial class LayoutBrowserWindow
     {
         if (e.ChangedButton == MouseButton.Right)
         {
-            WindowTabItem tab = viewModel.CurrentTab;
+            WindowTabItem? tab = viewModel.CurrentTab;
             if (tab != null)
             {
                 tab.ViewModel.Hidden = !tab.ViewModel.Hidden;
@@ -310,8 +307,7 @@ public static class Win32MaximizeHelper
 {
     // don't hide taskbar when maximized
     // taken from http://www.abhisheksur.com/2010/09/taskbar-with-window-maximized-and.html
-    public static void FixMaximize(System.Windows.Window window, Thickness borderMargin,
-        LayoutBrowserWindowViewModel viewModel)
+    public static void FixMaximize(System.Windows.Window window, Thickness borderMargin)
     { 
         IntPtr handle = new WindowInteropHelper(window).Handle;
         HwndSource hSource = HwndSource.FromHwnd(handle);
@@ -339,14 +335,14 @@ public static class Win32MaximizeHelper
 
     private static void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam, Thickness borderThickness)
     {
-        MINMAXINFO mmi = (MINMAXINFO) Marshal.PtrToStructure(lParam, typeof(MINMAXINFO));
+        MINMAXINFO mmi = (MINMAXINFO) Marshal.PtrToStructure(lParam, typeof(MINMAXINFO))!;
 
         // Adjust the maximized size and position to fit the work area of the correct monitor
         int MONITOR_DEFAULTTONEAREST =0x00000002;
         var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
-        Size topLeft = new Size(borderThickness.Left, borderThickness.Top),
-            bottomRight = new Size(borderThickness.Right, borderThickness.Bottom);
+        Size topLeft = new(borderThickness.Left, borderThickness.Top),
+            bottomRight = new(borderThickness.Right, borderThickness.Bottom);
         /*using (*/var hSource = HwndSource.FromHwnd(hwnd);//)
         {
             Matrix transformToDevice = hSource.CompositionTarget.TransformToDevice;
@@ -356,7 +352,7 @@ public static class Win32MaximizeHelper
 
         if (monitor != IntPtr.Zero)
         {
-            MONITORINFOEX monitorInfo = new MONITORINFOEX();
+            MONITORINFOEX monitorInfo = new();
             GetMonitorInfo(monitor, monitorInfo);
             RECT rcWorkArea = monitorInfo.rcWork;
             RECT rcMonitorArea = monitorInfo.rcMonitor;
@@ -405,17 +401,14 @@ public static class Win32MaximizeHelper
         }
     }
 
-    // size of a device name string
-    private const int CCHDEVICENAME = 32;
-
     [DllImport("User32.dll", CharSet=CharSet.Auto)] 
-    public static extern bool GetMonitorInfo(IntPtr hmonitor, [In, Out]MONITORINFOEX info);
+    private static extern bool GetMonitorInfo(IntPtr hmonitor, [In, Out]MONITORINFOEX info);
 
     [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Auto, Pack=4)]
     public class MONITORINFOEX { 
         public int     cbSize = Marshal.SizeOf(typeof(MONITORINFOEX));
-        public RECT    rcMonitor = new RECT(); 
-        public RECT    rcWork = new RECT(); 
+        public RECT    rcMonitor = new(); 
+        public RECT    rcWork = new(); 
         public int     dwFlags = 0;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)] 
         public char[]  szDevice = new char[32];
@@ -440,6 +433,7 @@ public struct RECT {
     public int bottom; 
 }
 
+#pragma warning disable CA1069
 [Flags]
 public enum SetWindowPosFlags : uint
 {
@@ -522,3 +516,4 @@ public enum SetWindowPosFlags : uint
 
     // ReSharper restore InconsistentNaming
 }
+#pragma warning restore CA1069

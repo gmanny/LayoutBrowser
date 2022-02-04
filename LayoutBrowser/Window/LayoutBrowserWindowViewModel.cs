@@ -52,12 +52,12 @@ public class LayoutBrowserWindowViewModel : ObservableObject
     private readonly double leftNativeInit, topNativeInit, widthNativeInit, heightNativeInit;
     private WindowState state;
     private WindowState preMinState;
-    private WindowTabItem currentTab;
+    private WindowTabItem? currentTab;
     private bool showTabBar;
     private bool uiHidden;
     private bool notInLayout;
     private bool backgroundLoadEnabled;
-    private string iconPath;
+    private string? iconPath;
     private bool overrideLayoutMethod;
     private bool overrideLayoutUsingToBack;
 
@@ -115,7 +115,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
     public ICommand ChangeIconCommand => changeIconCommand;
     public ICommand QuitCommand => quitCommand;
 
-    public event Func<Rectangle> NativeRect;
+    public event Func<Rectangle>? NativeRect;
         
     public double LeftInit => leftInit;
     public double TopInit => topInit;
@@ -171,7 +171,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         set => SetProperty(ref notInLayout, value);
     }
 
-    public string IconPath
+    public string? IconPath
     {
         get => iconPath;
         set => SetProperty(ref iconPath, value);
@@ -191,7 +191,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         set => SetProperty(ref overrideLayoutUsingToBack, value);
     }
 
-    private void OnTabsChanged(object sender, NotifyCollectionChangedEventArgs e)
+    private void OnTabsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ShowTabBar = tabs.Count > 1;
     }
@@ -336,16 +336,16 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         State = preMinState;
     }
 
-    private async Task OnOpenNewWindow(WindowTabItem itm, CoreWebView2NewWindowRequestedEventArgs e, bool foreground)
+    private async Task OnOpenNewWindow(WindowTabItem? itm, CoreWebView2NewWindowRequestedEventArgs? e, bool foreground)
     {
-        Task result = OpenNewWindow?.Invoke(itm, this, e, foreground);
+        Task? result = OpenNewWindow?.Invoke(itm, this, e, foreground);
         if (result != null)
         {
             await result;
         }
     }
 
-    public event Func<WindowTabItem, LayoutBrowserWindowViewModel, CoreWebView2NewWindowRequestedEventArgs, bool, Task> OpenNewWindow;
+    public event Func<WindowTabItem?, LayoutBrowserWindowViewModel, CoreWebView2NewWindowRequestedEventArgs?, bool, Task>? OpenNewWindow;
 
     public LayoutWindow ToModel() => new()
     {
@@ -363,13 +363,13 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         uiHidden = uiHidden,
         notInLayout = notInLayout,
         tabs = tabs.Select(t => t.ViewModel.ToModel()).ToList(),
-        activeTabIndex = tabs.IndexOf(CurrentTab),
+        activeTabIndex = currentTab == null ? 0 : tabs.IndexOf(currentTab),
         iconPath = iconPath,
         overrideToBack = overrideLayoutMethod ? overrideLayoutUsingToBack : null
     };
 
     public ObservableCollection<WindowTabItem> Tabs => tabs;
-    public ObservableCollection<WindowTabItem> BackgroundLoading => backgroundLoadEnabled ? backgroundLoading : null;
+    public ObservableCollection<WindowTabItem>? BackgroundLoading => backgroundLoadEnabled ? backgroundLoading : null;
 
     public bool BackgroundLoadEnabled
     {
@@ -381,12 +381,15 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         }
     }
 
-    public WindowTabItem CurrentTab
+    public WindowTabItem? CurrentTab
     {
         get => currentTab;
         set
         {
-            backgroundLoading.Remove(value);
+            if (value != null)
+            {
+                backgroundLoading.Remove(value);
+            }
 
             if (currentTab != null)
             {
@@ -506,28 +509,23 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         {
             CloseWindow();
         }
-        else
+        else if (currentTab != null)
         {
-            CloseTab(CurrentTab);
+            CloseTab(currentTab);
         }
     }
 
-    public event Action WindowCloseRequested;
+    public event Action? WindowCloseRequested;
 
     private void CloseWindow()
     {
         WindowCloseRequested?.Invoke();
     }
 
-    public event Action<LayoutBrowserWindowViewModel, WindowTabItem, int> TabClosed;
+    public event Action<LayoutBrowserWindowViewModel, WindowTabItem, int>? TabClosed;
 
     public void CloseTab(WindowTabItem tab, bool doDispose = true)
     {
-        if (tab == null)
-        {
-            return;
-        }
-
         bool isCurrent = CurrentTab == tab;
 
         int tabIndex = Tabs.IndexOf(tab);
@@ -571,19 +569,19 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         }
     }
 
-    public event Action<LayoutBrowserWindowViewModel> WindowBecameEmpty;
+    public event Action<LayoutBrowserWindowViewModel>? WindowBecameEmpty;
 
     protected virtual void OnWindowBecameEmpty()
     {
         WindowBecameEmpty?.Invoke(this);
     }
 
-    public void OpenNewTab(string profile = null)
+    public void OpenNewTab(string? profile = null)
     {
         WindowTabItem tab = AddTab(new LayoutWindowTab
         {
             url = null,
-            profile = profile ?? currentTab.ViewModel.Profile.Name ?? ProfileManager.DefaultProfile
+            profile = profile ?? currentTab?.ViewModel.Profile.Name ?? ProfileManager.DefaultProfile
         });
 
         CurrentTab = tab;
@@ -607,7 +605,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
     private void ChangeTabOffs(int offs)
     {
-        WindowTabItem ct = CurrentTab;
+        WindowTabItem? ct = CurrentTab;
         if (ct == null)
         {
             return;
@@ -625,7 +623,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
             idx = Tabs.Count - 1;
         }
 
-        idx = idx % Tabs.Count;
+        idx %= Tabs.Count;
 
         CurrentTab = Tabs[idx];
     }
@@ -642,7 +640,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
     private void MoveTabOffs(int offs)
     {
-        WindowTabItem ct = CurrentTab;
+        WindowTabItem? ct = CurrentTab;
         if (ct == null)
         {
             return;
@@ -660,12 +658,12 @@ public class LayoutBrowserWindowViewModel : ObservableObject
             idx = Tabs.Count - 1;
         }
 
-        idx = idx % Tabs.Count;
+        idx %= Tabs.Count;
 
         Tabs.Move(tabIndex, idx);
     }
 
-    public void Quit()
+    public static void Quit()
     {
         Environment.Exit(0);
     }
@@ -682,7 +680,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
     public void FocusAddressBar()
     {
-        WindowTabItem ct = currentTab;
+        WindowTabItem? ct = currentTab;
         if (ct == null)
         {
             return;
@@ -698,7 +696,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
         }
     }
         
-    public event Action<LayoutBrowserWindowViewModel, WindowTabItem> PopoutRequested;
+    public event Action<LayoutBrowserWindowViewModel, WindowTabItem>? PopoutRequested;
 
     public void RequestPopout()
     {
@@ -709,7 +707,7 @@ public class LayoutBrowserWindowViewModel : ObservableObject
             return;
         }
 
-        WindowTabItem tab = CurrentTab;
+        WindowTabItem? tab = CurrentTab;
         if (tab == null)
         {
             return;
@@ -744,10 +742,10 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
         if (iconPath.IsNullOrEmpty())
         {
-            string entryLocation = Assembly.GetEntryAssembly()?.Location;
+            string? entryLocation = Assembly.GetEntryAssembly()?.Location;
             if (!entryLocation.IsNullOrEmpty())
             {
-                string entryDir = Path.GetDirectoryName(entryLocation);
+                string? entryDir = Path.GetDirectoryName(entryLocation);
                 if (entryDir != null)
                 {
                     string wholeDir = Path.Combine(entryDir, "Resources", "Icons", "crystal-clear-icons-by-everaldo", "ico");
@@ -775,5 +773,7 @@ public record WindowTabItem(BrowserTabViewModel ViewModel, BrowserTab Control) :
     {
         ViewModel.Dispose();
         Control.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }
