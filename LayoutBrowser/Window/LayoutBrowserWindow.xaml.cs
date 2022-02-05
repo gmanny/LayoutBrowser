@@ -299,6 +299,19 @@ public partial class LayoutBrowserWindow
         if (e.ChangedButton == MouseButton.Right)
         {
             viewModel.NotInLayout = !viewModel.NotInLayout;
+
+            e.Handled = true;
+        }
+    }
+
+    private void OnCloseMouseDownPreview(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Middle)
+        {
+            viewModel.QuitCommand.Execute(null);
+
+            e.Handled = true;
+            //return;
         }
     }
 }

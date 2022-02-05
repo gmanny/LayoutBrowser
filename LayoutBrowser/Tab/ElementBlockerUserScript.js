@@ -7,6 +7,7 @@
     let docInited = false;
     let inited = false;
     let elementBlockRules = [];
+    let debug = false; // this gets replaced before user script injection
 
     const reapplyRules = function(parentElements, rules = null) {
         if (rules === null) {
@@ -23,11 +24,15 @@
                         elements.push(...parentElement.querySelectorAll(rule));
                     }
                 } catch (ex) {
-                    console.log('Error handling rule "', rule, '":', ex);
+                    if (debug) {
+                        console.log('Error handling rule "', rule, '":', ex);
+                    }
                 }
 
                 for (const element of elements) {
-                    console.log('Blocking element', element, 'with rule "', rule, '"');
+                    if (debug) {
+                        console.log('Blocking element', element, 'with rule "', rule, '"');
+                    }
 
                     const prevElementStyle = element.style[blockStyleName];
                     element.setAttribute(blockElementMarkerAttr, prevElementStyle ? prevElementStyle : blockElementMarkerMagic); // mark removed element
@@ -87,7 +92,9 @@
                     element.style[blockStyleName] = (!attrVal || attrVal === blockElementMarkerMagic) ? null : attrVal;
                 }
             } catch (ex) {
-                console.log('Error restoring rule "', rule, '":', ex);
+                if (debug) {
+                    console.log('Error restoring rule "', rule, '":', ex);
+                }
                 continue;
             }
         }
@@ -100,7 +107,9 @@
 
         const msg = msgContainer.data;
 
-        console.log('WV MSG', msg);
+        if (debug) {
+            console.log('WV MSG', msg);
+        }
 
         if (!msg.type) {
             return;

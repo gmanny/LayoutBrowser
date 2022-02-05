@@ -106,19 +106,16 @@
                         </ContextMenu.Resources>
 
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current tab" Header="Per-tab:" />
-                        <MenuItem IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding UrlVm.LockUrl, Mode=TwoWay}" Header="Lock URL" ToolTip="Prevent the URL from being changed by the website due to redirects." ToolTipService.ShowDuration="999999999" />
-                        <MenuItem IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ScrollRestore.LockScroll, Mode=TwoWay}" Header="Lock Scroll" ToolTip="Remember the scroll position at the time of this option toggle and always restore to that scroll position." ToolTipService.ShowDuration="999999999" />
-                        <MenuItem IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hide content" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
-                        <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
+                        <MenuItem StaysOpenOnClick="True" Padding="20,0,0,0" ToolTipService.ShowDuration="999999999" ToolTip="Override tab's title to whatever you want. Use triple dollar signs in square brackets ([$$$]) to insert the web page title into your own.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Scroll restore delay:</TextBlock>
-                                    <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" FractionalSecondsDigitsCount="3" TextAlignment="Right" Value="{Binding ScrollRestore.ScrollDelay}" Minimum="00:00:00"
-                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Page title override:</TextBlock>
+                                    <TextBox Text="{Binding OverrideTitle, UpdateSourceTrigger=PropertyChanged}" MinWidth="40" MaxWidth="120" VerticalAlignment="Center" BorderThickness="0" Padding="5,0,5,0" />
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
-                        <MenuItem x:Name="negMrgMnu" Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars"
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem x:Name="negMrgMnu" Padding="20,0,0,0" Header="Negative margin" ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars"
                                   StaysOpenOnClick="True" IsChecked="{Binding NegativeMargin.Enabled}" PreviewMouseDown="OnNegativeMarginToggle">
                             <MenuItem StaysOpenOnClick="True" Header="Enabled" IsCheckable="True" IsChecked="{Binding NegativeMargin.Enabled}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="A way to apply negative margin to the root element of the web page. Useful for hiding fixed floating elements like top menu bars and side bars" />
@@ -180,15 +177,26 @@
                             <MenuItem StaysOpenOnClick="True" Header="Left/Right as native margin" IsCheckable="True" IsChecked="{Binding NegativeMargin.LeftRightNativeMode}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="Switches left/right margin application from inside the browser via CSS (when off) to changing the position of the browser view (when on). Useful when the page uses size of the viewport to position its components. When this is on the window unfortunately loses resizing grips on the sides with negative margin." />
                         </MenuItem>
-                        <MenuItem StaysOpenOnClick="True" ToolTipService.ShowDuration="999999999" ToolTip="Override tab's title to whatever you want. Use triple dollar signs in square brackets ([$$$]) to insert the web page title into your own.">
+                        <MenuItem Header="Element blocker" Padding="20,0,0,0" ToolTipService.ShowDuration="999999999" ToolTip="Hides elements that match a CSS selector."
+                                  StaysOpenOnClick="True" IsChecked="{Binding ElementBlocker.Enabled}" ItemsSource="{Binding ElementBlocker.UiMenuItems}"
+                                  UsesItemContainerTemplate="True" ItemContainerTemplateSelector="{StaticResource DefTemplateSelector}" ItemTemplate="{x:Null}" PreviewMouseDown="OnNegativeMarginToggle" />
+                        <MenuItem IsCheckable="True" Padding="20,0,0,0" StaysOpenOnClick="True" IsChecked="{Binding Hidden, Mode=TwoWay}" Header="Hide content" ToolTip="Hide browser contents. Useful if you want to hide actively updating page without minimizing it. Can also be toggled by right-clicking the Minimize button." ToolTipService.ShowDuration="999999999" />
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem IsCheckable="True" Padding="20,0,0,0" StaysOpenOnClick="True" IsChecked="{Binding UrlVm.LockUrl, Mode=TwoWay}" Header="Lock URL" ToolTip="Prevent the URL from being changed by the website due to redirects." ToolTipService.ShowDuration="999999999" />
+                        <MenuItem IsCheckable="True" Padding="20,0,0,0" StaysOpenOnClick="True" IsChecked="{Binding ScrollRestore.LockScroll, Mode=TwoWay}" Header="Lock Scroll" ToolTip="Remember the scroll position at the time of this option toggle and always restore to that scroll position." ToolTipService.ShowDuration="999999999" />
+                        <MenuItem StaysOpenOnClick="True" Padding="20,0,0,0" ToolTipService.ShowDuration="999999999" ToolTip="Additional time to wait after page load before restoring scroll position. Useful for when content is loaded dynamically by the page.">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Page title override:</TextBlock>
-                                    <TextBox Text="{Binding OverrideTitle, UpdateSourceTrigger=PropertyChanged}" MinWidth="40" MaxWidth="120" VerticalAlignment="Center" BorderThickness="0" Padding="5,0,5,0" />
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0">Scroll restore delay:</TextBlock>
+                                    <xctk:TimeSpanUpDown ShowDays="False" ShowSeconds="True" FractionalSecondsDigitsCount="3" TextAlignment="Right" Value="{Binding ScrollRestore.ScrollDelay}" Minimum="00:00:00"
+                                                         VerticalAlignment="Center" ShowButtonSpinner="True" BorderThickness="0" Padding="5,0,5,0" />
                                 </StackPanel>
                             </MenuItem.Header>
                         </MenuItem>
-                        <MenuItem IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding UrlVm.DontRefreshOnBrowserFail, Mode=TwoWay}" ToolTip="Don't auto-refresh this tab if the browser process fails/crashes for some reason." ToolTipService.ShowDuration="999999999">
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem Header="Open new tab" Padding="20,0,0,0" InputGestureText="Ctrl+T" Command="{Binding ParentWindow.OpenNewTabCommand}" />
+                        <MenuItem Header="Duplicate tab" Padding="20,0,0,0" Click="DuplicateTabClick" />
+                        <MenuItem IsCheckable="True" Padding="20,0,0,0" StaysOpenOnClick="True" IsChecked="{Binding UrlVm.DontRefreshOnBrowserFail, Mode=TwoWay}" ToolTip="Don't auto-refresh this tab if the browser process fails/crashes for some reason." ToolTipService.ShowDuration="999999999">
                             <MenuItem.Style>
                                 <Style TargetType="MenuItem">
                                     <Style.Triggers>
@@ -213,21 +221,18 @@
                                 </Style>
                             </MenuItem.Style>
                         </MenuItem>
-                        <MenuItem Header="Duplicate tab" Click="DuplicateTabClick" />
-                        <MenuItem Header="Element blocker" ToolTipService.ShowDuration="999999999" ToolTip="Hides elements that match a CSS selector."
-                                  StaysOpenOnClick="True" IsChecked="{Binding ElementBlocker.Enabled}" ItemsSource="{Binding ElementBlocker.UiMenuItems}"
-                                  UsesItemContainerTemplate="True" ItemContainerTemplateSelector="{StaticResource DefTemplateSelector}" ItemTemplate="{x:Null}" PreviewMouseDown="OnNegativeMarginToggle" />
 
                         <Separator />
                         <!-- Per-window settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the current window" Header="Per-window:" />
-                        <MenuItem Header="Not in layout" StaysOpenOnClick="True" IsCheckable="True" IsChecked="{Binding ParentWindow.NotInLayout}" ToolTip="Exclude the window from a locked layout so that it's not obscured by other windows when activated." />
-                        <MenuItem Header="Change icon" Command="{Binding ParentWindow.ChangeIconCommand}">
+                        <MenuItem Header="Change icon" Command="{Binding ParentWindow.ChangeIconCommand}" Padding="20,0,0,0">
                             <MenuItem.Icon>
                                 <Image Source="{Binding ParentWindow.IconPath}" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem ToolTipService.ShowDuration="999999999" ToolTip="Override window order maintenance behavior for the current window"
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem Header="Not in layout" StaysOpenOnClick="True" Padding="20,0,0,0" IsCheckable="True" IsChecked="{Binding ParentWindow.NotInLayout}" ToolTip="Exclude the window from a locked layout so that it's not obscured by other windows when activated." />
+                        <MenuItem ToolTipService.ShowDuration="999999999" Padding="20,0,0,0" ToolTip="Override window order maintenance behavior for the current window"
                                   StaysOpenOnClick="True" IsChecked="{Binding ParentWindow.OverrideLayoutMethod}" PreviewMouseDown="OnNegativeMarginToggle">
                             <MenuItem.Style>
                                 <Style TargetType="MenuItem">
@@ -261,8 +266,10 @@
                             <MenuItem StaysOpenOnClick="True" Header="Use ToBack" IsCheckable="True" IsChecked="{Binding ParentWindow.OverrideLayoutUsingToBack}"
                                       ToolTipService.ShowDuration="999999999" ToolTip="If checked and layout behavior override enabled, window is always sent to back when window layout is restored for a `Window order locked` setting. If unchecked, the window is sent to the front." />
                         </MenuItem>
-                        <MenuItem Header="Duplicate window" Click="DuplicateWindowClick" />
-                        <MenuItem StaysOpenOnClick="True" Header="Debug">
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem Header="Open new window" Padding="20,0,0,0" InputGestureText="Ctrl+N" Command="{Binding ParentWindow.OpenNewWindowCommand}" />
+                        <MenuItem Header="Duplicate window" Padding="20,0,0,0" Click="DuplicateWindowClick" />
+                        <MenuItem StaysOpenOnClick="True" Padding="20,0,0,0" Header="Debug">
                             <MenuItem.Style>
                                 <Style TargetType="MenuItem">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -284,11 +291,13 @@
                         <Separator />
                         <!-- Global settings -->
                         <MenuItem IsEnabled="False" StaysOpenOnClick="True" ToolTip="Settings applicable to the whole window layout" Header="Global:" />
-                        <MenuItem Header="Dark mode" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.DarkMode, Mode=TwoWay}" />
-                        <MenuItem Header="Window order locked" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
-                        <MenuItem Header="Maintain order with ToBack" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
-                        <MenuItem Header="Store closed tab history" ToolTipService.ShowDuration="999999999" ToolTip="Save closed windows and tabs to disk between restarts. This mimics chromium's behavior, but stores browsing history in plain text on disk." IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.StoreClosedHistory, Mode=TwoWay}" />
-                        <MenuItem Header="Quit" InputGestureText="Ctrl+Q/Alt+Q" Command="{Binding ParentWindow.QuitCommand}" />
+                        <MenuItem Header="Dark mode" Padding="20,0,0,0" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.DarkMode, Mode=TwoWay}" />
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem Header="Window order locked" Padding="20,0,0,0" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.LayoutLocked, Mode=TwoWay}" />
+                        <MenuItem Header="Maintain order with ToBack" Padding="20,0,0,0" ToolTipService.ShowDuration="999999999" ToolTip="Maintain window order, when locked, by bringing the overlapping windows to back instead of by bringing overlapped windows to front. Can be useful when you've got other applications overlapping browser windows and want them to stay on top of the browser." IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.LayoutRestoreUsingToBack, Mode=TwoWay}" />
+                        <Separator Margin="20,0,0,0" />
+                        <MenuItem Header="Store closed tab history" Padding="20,0,0,0" ToolTipService.ShowDuration="999999999" ToolTip="Save closed windows and tabs to disk between restarts. This mimics chromium's behavior, but stores browsing history in plain text on disk." IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding LayoutMgr.StoreClosedHistory, Mode=TwoWay}" />
+                        <MenuItem Header="Quit" Padding="20,0,0,0" InputGestureText="Ctrl+Q/Alt+Q" Command="{Binding ParentWindow.QuitCommand}" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>

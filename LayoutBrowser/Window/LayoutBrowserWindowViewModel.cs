@@ -45,6 +45,8 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
     private readonly ICommand changeIconCommand;
     private readonly ICommand quitCommand;
+    private readonly ICommand openNewTabCommand;
+    private readonly ICommand openNewWindowCommand;
 
     private double left, top, width, height;
     private readonly double leftInit, topInit, widthInit, heightInit;
@@ -95,6 +97,8 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
         changeIconCommand = new WindowCommand(PickNewIcon);
         quitCommand = new WindowCommand(Quit);
+        openNewTabCommand = new WindowCommand(() => OpenNewTab());
+        openNewWindowCommand = new WindowCommand(OpenNewEmptyWindow);
 
         foreach (LayoutWindowTab tabModel in model.tabs)
         {
@@ -114,6 +118,8 @@ public class LayoutBrowserWindowViewModel : ObservableObject
 
     public ICommand ChangeIconCommand => changeIconCommand;
     public ICommand QuitCommand => quitCommand;
+    public ICommand OpenNewWindowCommand => openNewWindowCommand;
+    public ICommand OpenNewTabCommand => openNewTabCommand;
 
     public event Func<Rectangle>? NativeRect;
         

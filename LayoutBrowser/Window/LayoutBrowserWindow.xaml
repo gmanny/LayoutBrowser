@@ -425,7 +425,7 @@
                     </Button>
 
                     <!-- "Close" button -->
-                    <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick">
+                    <Button Width="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" BorderThickness="0" Content="✕" Padding="0,0,0,1" IsTabStop="False" Click="OnCloseClick" PreviewMouseDown="OnCloseMouseDownPreview" ToolTip="Close window (Ctrl+W)&#xD;&#xA;Middle click: quit application">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">

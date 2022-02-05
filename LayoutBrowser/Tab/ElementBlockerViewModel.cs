@@ -16,7 +16,7 @@ namespace LayoutBrowser.Tab;
 
 public interface IElementBlockerViewModelFactory
 {
-    ElementBlockerViewModel ForModel(ElementBlockingSettings? model);
+    ElementBlockerViewModel ForModel(ElementBlockingSettings? model, BrowserTabViewModel parentTab);
 }
 
 public class ElementBlockerViewModel : ObservableObject, ITabFeatureViewModel
@@ -27,6 +27,8 @@ public class ElementBlockerViewModel : ObservableObject, ITabFeatureViewModel
 
     private static readonly string BlockingUserScript;
 
+    private readonly BrowserTabViewModel parentTab;
+
     private readonly ObservableCollection<ElementBlockerRuleItemViewModel> rules = new();
     private readonly CollectionManager<IElementBlockerMenuItem, IElementBlockerMenuItem> uiMenuItems = new(i => i);
 
@@ -36,8 +38,9 @@ public class ElementBlockerViewModel : ObservableObject, ITabFeatureViewModel
     private WebView2? webView;
     private WebView2MessagingService? msgr;
 
-    public ElementBlockerViewModel(ElementBlockingSettings? model)
+    public ElementBlockerViewModel(ElementBlockingSettings? model, BrowserTabViewModel parentTab)
     {
+        this.parentTab = parentTab;
         enabled = model?.enabled ?? false;
 
         foreach (ElementBlockingRule rule in model?.rules ?? Enumerable.Empty<ElementBlockingRule>())
@@ -233,7 +236,8 @@ public class ElementBlockerViewModel : ObservableObject, ITabFeatureViewModel
 
         messenger.AddMessageHandler<EmptyMessage>(StartMsgType, OnElementBlockerScriptStart);
 
-        await wv.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(BlockingUserScript);
+        string userScript = BlockingUserScript.Replace("let debug = false;", $"let debug = {(parentTab.ParentWindow.ShowDebugInfo ? "true" : "false")};");
+        await wv.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(userScript);
     }
 
     private void OnElementBlockerScriptStart(EmptyMessage msg)

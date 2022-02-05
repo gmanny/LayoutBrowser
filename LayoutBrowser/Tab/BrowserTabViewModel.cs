@@ -73,7 +73,7 @@ public class BrowserTabViewModel : ObservableObject, IDisposable
 
         autoRefresh = autoRefreshFactory.ForSettings(model.autoRefreshEnabled, model.autoRefreshTime, urlVm.OnAutoRefresh);
 
-        elementBlocker = blockerFactory.ForModel(model.elementBlocking);
+        elementBlocker = blockerFactory.ForModel(model.elementBlocking, this);
             
         storedZoomFactor = zoomFactor = model.zoomFactor;
         browserTitle = model.title;

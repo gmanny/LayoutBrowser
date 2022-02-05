@@ -120,8 +120,14 @@ public class ScrollRestoreViewModel : ObservableObject, ITabFeatureViewModel
             {
                 await Task.Delay(scrollDelay, cts.Token);
             }
-            catch (TaskCanceledException) { return; }
-            catch (OperationCanceledException) { return; }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
 
             if (cts.IsCancellationRequested)
             {
@@ -130,6 +136,10 @@ public class ScrollRestoreViewModel : ObservableObject, ITabFeatureViewModel
 
             Point coords = restore.Value;
             await webView.ExecuteScriptAsync($"window.scrollTo({coords.X:0.0}, {coords.Y:0.0})");
+        }
+        catch (ObjectDisposedException)
+        {
+            // webView was closed before the the scroll restore could happen
         }
         finally
         {
